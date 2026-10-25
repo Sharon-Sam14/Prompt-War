@@ -1,0 +1,24 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 320 200" fill="none" role="img" aria-label="Birthday cake with candles and confetti">
+  <!-- confetti -->
+  <circle cx="70" cy="52" r="4" fill="#b5726a"/>
+  <circle cx="250" cy="44" r="4" fill="#a8802a"/>
+  <path d="M96 76l6-10M232 78l-6-10M160 34v-12" stroke="#6b7f5e" stroke-width="2" stroke-linecap="round"/>
+  <path d="M58 100c4-4 4-10 0-14M262 96c-4-4-4-10 0-14" stroke="#a8802a" stroke-width="2" stroke-linecap="round"/>
+  <circle cx="118" cy="44" r="3" fill="#6b7f5e"/>
+  <circle cx="204" cy="52" r="3" fill="#b5726a"/>
+  <!-- candles -->
+  <path d="M138 104V78M160 104V72M182 104V78" stroke="#a8802a" stroke-width="3" stroke-linecap="round"/>
+  <path d="M138 70c5-4 5-10 0-14-5 4-5 10 0 14ZM160 64c5-4 5-10 0-14-5 4-5 10 0 14ZM182 70c5-4 5-10 0-14-5 4-5 10 0 14Z" fill="#b5726a"/>
+  <!-- upper tier -->
+  <rect x="116" y="104" width="88" height="30" rx="5" stroke="#b5726a" stroke-width="2"/>
+  <path d="M116 116c8 6 14-6 22 0s14-6 22 0 14-6 22 0 14-6 22 0" stroke="#b5726a" stroke-width="1.5"/>
+  <!-- lower tier -->
+  <rect x="98" y="134" width="124" height="44" rx="6" stroke="#6b7f5e" stroke-width="2"/>
+  <path d="M98 148c10 7 17-7 27 0s17-7 27 0 17-7 27 0 17-7 27 0 17-7 16 0" stroke="#6b7f5e" stroke-width="1.5"/>
+  <!-- table rule -->
+  <path d="M60 178h200" stroke="#8a8072" stroke-width="1.5" stroke-linecap="round"/>
+  <path d="M74 178c14-6 24-16 30-30" stroke="#6b7f5e" stroke-width="1.5" stroke-linecap="round"/>
+  <path d="M88 164c-6-2-9-8-8-14 6 1 11 7 8 14Z" fill="#6b7f5e" opacity="0.7"/>
+  <path d="M246 178c-14-6-24-16-30-30" stroke="#6b7f5e" stroke-width="1.5" stroke-linecap="round"/>
+  <path d="M232 164c6-2 9-8 8-14-6 1-11 7-8 14Z" fill="#6b7f5e" opacity="0.7"/>
+</svg>

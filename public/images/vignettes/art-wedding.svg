@@ -1,0 +1,21 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 320 200" fill="none" role="img" aria-label="Wedding arch with two rings">
+  <!-- ceremony arch -->
+  <path d="M85 188V96c0-38.7 32.1-70 75-70s75 31.3 75 70v92" stroke="#6b7f5e" stroke-width="2" stroke-linecap="round"/>
+  <path d="M99 188v-90c0-31.5 26.4-57 59-57s59 25.5 59 57v90" stroke="#a8802a" stroke-width="1" opacity="0.55"/>
+  <!-- foliage crown -->
+  <path d="M160 26c-8 4-14 10-17 18" stroke="#6b7f5e" stroke-width="1.5" stroke-linecap="round"/>
+  <path d="M146 36c-7-3-9-10-7-16 6 1 11 7 7 16Z" fill="#6b7f5e" opacity="0.75"/>
+  <path d="M174 36c7-3 9-10 7-16-6 1-11 7-7 16Z" fill="#6b7f5e" opacity="0.75"/>
+  <!-- interlocking rings -->
+  <circle cx="145" cy="132" r="27" stroke="#a8802a" stroke-width="2.5"/>
+  <circle cx="182" cy="132" r="27" stroke="#b5726a" stroke-width="2.5"/>
+  <path d="M182 105l6 7-6 7-6-7 6-7Z" fill="#a8802a"/>
+  <!-- ground rule -->
+  <path d="M55 188h210" stroke="#8a8072" stroke-width="1.5" stroke-linecap="round"/>
+  <!-- corner sprigs -->
+  <path d="M70 188c14-6 24-16 30-30" stroke="#6b7f5e" stroke-width="1.5" stroke-linecap="round"/>
+  <path d="M84 174c-6-2-9-8-8-14 6 1 11 7 8 14Z" fill="#6b7f5e" opacity="0.7"/>
+  <path d="M96 163c1 6-2 12-8 15-2-6 2-12 8-15Z" fill="#6b7f5e" opacity="0.7"/>
+  <path d="M250 188c-14-6-24-16-30-30" stroke="#6b7f5e" stroke-width="1.5" stroke-linecap="round"/>
+  <path d="M236 174c6-2 9-8 8-14-6 1-11 7-8 14Z" fill="#6b7f5e" opacity="0.7"/>
+</svg>

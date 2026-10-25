@@ -1,0 +1,356 @@
+@import "tailwindcss";
+@import "tw-animate-css";
+@import "shadcn/tailwind.css";
+
+/*
+ * Theme contract (docs/Design.md v2 — "editorial premium"):
+ * cream-paper light / ink-paper dark, deep sage + rose + gold accents.
+ * Color values stay literal hex so tests/unit/theme-contrast.test.ts can
+ * parse this file and *prove* contrast — do not duplicate them elsewhere.
+ *
+ * Accent roles are per-vertical: the app root stamps data-vertical and the
+ * blocks below remap --accent-a / --accent-b (and their -text steps).
+ */
+@custom-variant dark (&:is(.dark *));
+
+@theme inline {
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
+  --font-sans: var(--font-geist-sans);
+  --font-mono: var(--font-geist-mono);
+  --font-display: var(--font-display-face);
+  --color-sidebar-ring: var(--sidebar-ring);
+  --color-sidebar-border: var(--sidebar-border);
+  --color-sidebar-accent-foreground: var(--sidebar-accent-foreground);
+  --color-sidebar-accent: var(--sidebar-accent);
+  --color-sidebar-primary-foreground: var(--sidebar-primary-foreground);
+  --color-sidebar-primary: var(--sidebar-primary);
+  --color-sidebar-foreground: var(--sidebar-foreground);
+  --color-sidebar: var(--sidebar);
+  --color-chart-5: var(--chart-5);
+  --color-chart-4: var(--chart-4);
+  --color-chart-3: var(--chart-3);
+  --color-chart-2: var(--chart-2);
+  --color-chart-1: var(--chart-1);
+  --color-ring: var(--ring);
+  --color-input: var(--input);
+  --color-border: var(--border);
+  --color-destructive: var(--destructive);
+  --color-destructive-foreground: var(--destructive-foreground);
+  --color-accent-foreground: var(--accent-foreground);
+  --color-accent: var(--accent);
+  --color-muted-foreground: var(--muted-foreground);
+  --color-muted: var(--muted);
+  --color-secondary-foreground: var(--secondary-foreground);
+  --color-secondary: var(--secondary);
+  --color-primary-foreground: var(--primary-foreground);
+  --color-primary: var(--primary);
+  --color-popover-foreground: var(--popover-foreground);
+  --color-popover: var(--popover);
+  --color-card-foreground: var(--card-foreground);
+  --color-card: var(--card);
+  /* Design.md v2 semantic tokens (roles, not hues). */
+  --color-surface: var(--card);
+  --color-accent-a: var(--accent-a);
+  --color-accent-a-text: var(--accent-a-text);
+  --color-accent-b: var(--accent-b);
+  --color-accent-b-text: var(--accent-b-text);
+  --color-gilt: var(--gilt);
+  --color-gilt-text: var(--gilt-text);
+  --color-success: var(--success);
+  --color-success-text: var(--success-text);
+  --color-danger-text: var(--danger-text);
+  --radius-sm: calc(var(--radius) * 0.6);
+  --radius-md: calc(var(--radius) * 0.8);
+  --radius-lg: var(--radius);
+  --radius-xl: calc(var(--radius) * 1.4);
+  --radius-2xl: calc(var(--radius) * 1.8);
+  --radius-3xl: calc(var(--radius) * 2.2);
+  --radius-4xl: calc(var(--radius) * 2.6);
+}
+
+/* Light theme — "cream paper" (Design.md v2). */
+:root {
+  --background: #faf7f1;
+  --foreground: #23201c;
+  --card: #fdfbf6;
+  --card-foreground: #23201c;
+  --popover: #fdfbf6;
+  --popover-foreground: #23201c;
+  --primary: #3d5245;
+  --primary-foreground: #faf7f1;
+  --secondary: #f3ede1;
+  --secondary-foreground: #23201c;
+  --muted: #f3ede1;
+  --muted-foreground: #665f52;
+  --accent: #f3ede1;
+  --accent-foreground: #23201c;
+  --destructive: #a63d40;
+  --destructive-foreground: #faf7f1;
+  --border: #e6dfd2;
+  --input: #8a8072;
+  --ring: #a8802a;
+  --chart-1: #3d5245;
+  --chart-2: #6b7f5e;
+  --chart-3: #b5726a;
+  --chart-4: #a8802a;
+  --chart-5: #665f52;
+  --sidebar: #f6f1e7;
+  --sidebar-foreground: #23201c;
+  --sidebar-primary: #3d5245;
+  --sidebar-primary-foreground: #faf7f1;
+  --sidebar-accent: #ece4d4;
+  --sidebar-accent-foreground: #23201c;
+  --sidebar-border: #e6dfd2;
+  --sidebar-ring: #a8802a;
+  --radius: 0.5rem;
+}
+
+/* Per-vertical accent roles — light (must come after the :root defaults so
+   they win the merge; specificity 0,1,0 like :root). */
+:root {
+  --accent-a: #6b7f5e;
+  --accent-a-text: #4d5c42;
+  --accent-b: #b5726a;
+  --accent-b-text: #8c5249;
+  --gilt: #a8802a;
+  --gilt-text: #7d5f18;
+  --success: #15803d;
+  --success-text: #15803d;
+  --danger-text: #9c3136;
+}
+[data-vertical="wedding"] {
+  --accent-a: #6b7f5e;
+  --accent-a-text: #4d5c42;
+  --accent-b: #b5726a;
+  --accent-b-text: #8c5249;
+  --gilt: #a8802a;
+  --gilt-text: #7d5f18;
+}
+[data-vertical="birthday"] {
+  --accent-a: #b5726a;
+  --accent-a-text: #8c5249;
+  --accent-b: #a8802a;
+  --accent-b-text: #7d5f18;
+  --gilt: #6b7f5e;
+  --gilt-text: #4d5c42;
+}
+[data-vertical="community"] {
+  --accent-a: #5b8299;
+  --accent-a-text: #41627a;
+  --accent-b: #6b7f5e;
+  --accent-b-text: #4d5c42;
+  --gilt: #a8802a;
+  --gilt-text: #7d5f18;
+}
+
+/* Dark theme — "ink paper" (Design.md v2). */
+.dark {
+  --background: #191b17;
+  --foreground: #f2ede3;
+  --card: #212420;
+  --card-foreground: #f2ede3;
+  --popover: #212420;
+  --popover-foreground: #f2ede3;
+  --primary: #a9bc96;
+  --primary-foreground: #171a15;
+  --secondary: #2a2e28;
+  --secondary-foreground: #f2ede3;
+  --muted: #2a2e28;
+  --muted-foreground: #b0a695;
+  --accent: #2a2e28;
+  --accent-foreground: #f2ede3;
+  --destructive: #e0a3a3;
+  --destructive-foreground: #2a1517;
+  --border: #38342e;
+  --input: #837a6b;
+  --ring: #c9a24a;
+  --chart-1: #a9bc96;
+  --chart-2: #9fb48e;
+  --chart-3: #cf9a92;
+  --chart-4: #d9b871;
+  --chart-5: #b0a695;
+  --sidebar: #15170f;
+  --sidebar-foreground: #f2ede3;
+  --sidebar-primary: #a9bc96;
+  --sidebar-primary-foreground: #171a15;
+  --sidebar-accent: #2a2e28;
+  --sidebar-accent-foreground: #f2ede3;
+  --sidebar-border: #38342e;
+  --sidebar-ring: #c9a24a;
+  --success: #9fbe86;
+  --success-text: #9fbe86;
+  --danger-text: #e0a3a3;
+  --accent-a: #9fb48e;
+  --accent-a-text: #9fb48e;
+  --accent-b: #cf9a92;
+  --accent-b-text: #cf9a92;
+  --gilt: #d9b871;
+  --gilt-text: #d9b871;
+}
+
+/* Per-vertical accent roles — dark (descendant combinator: .dark lives on
+   <html>, data-vertical on the app root div). */
+.dark [data-vertical="wedding"] {
+  --accent-a: #9fb48e;
+  --accent-a-text: #9fb48e;
+  --accent-b: #cf9a92;
+  --accent-b-text: #cf9a92;
+  --gilt: #d9b871;
+  --gilt-text: #d9b871;
+}
+.dark [data-vertical="birthday"] {
+  --accent-a: #cf9a92;
+  --accent-a-text: #cf9a92;
+  --accent-b: #d9b871;
+  --accent-b-text: #d9b871;
+  --gilt: #9fb48e;
+  --gilt-text: #9fb48e;
+}
+.dark [data-vertical="community"] {
+  --accent-a: #93b2c4;
+  --accent-a-text: #93b2c4;
+  --accent-b: #9fb48e;
+  --accent-b-text: #9fb48e;
+  --gilt: #d9b871;
+  --gilt-text: #d9b871;
+}
+
+@layer base {
+  * {
+    @apply border-border outline-ring/50;
+  }
+  body {
+    @apply bg-background text-foreground;
+  }
+  html {
+    @apply font-sans;
+    scroll-behavior: smooth;
+  }
+}
+
+@layer components {
+  /* Small-caps kicker above headings (Design.md §2 typography). */
+  .eyebrow {
+    font-size: 0.6875rem;
+    line-height: 1rem;
+    letter-spacing: 0.18em;
+    text-transform: uppercase;
+    font-weight: 500;
+  }
+  /* Serif display face for headings and stat numbers. */
+  .display {
+    font-family: var(--font-display-face), Georgia, "Times New Roman", serif;
+  }
+  /* Hairline gold rule with an optional center glyph (restrained ornament). */
+  .rule-gilt {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    color: var(--gilt);
+  }
+  .rule-gilt::before,
+  .rule-gilt::after {
+    content: "";
+    height: 1px;
+    flex: 1;
+    background: currentColor;
+    opacity: 0.5;
+  }
+}
+
+/* WCAG 2.3.3: honor reduced motion globally. */
+@media (prefers-reduced-motion: reduce) {
+  html {
+    scroll-behavior: auto;
+  }
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+}
+
+/* Numbers never wrap and align in columns. */
+.tnum {
+  font-variant-numeric: tabular-nums;
+}
+
+/*
+ * Print output = stationery (Design.md §4.7). App chrome (header, rail,
+ * controls) is hidden with Tailwind print:hidden in markup; this block keeps
+ * paper white and re-keys dark mode to the light palette so ink-theme users
+ * get legible print too. Selector is html.dark (not .dark) on purpose: the
+ * contrast test merges exact ".dark" blocks and must not see these copies.
+ */
+@media print {
+  html,
+  body {
+    background: #ffffff !important;
+  }
+  html.dark {
+    --background: #faf7f1;
+    --foreground: #23201c;
+    --card: #fdfbf6;
+    --card-foreground: #23201c;
+    --popover: #fdfbf6;
+    --popover-foreground: #23201c;
+    --primary: #3d5245;
+    --primary-foreground: #faf7f1;
+    --secondary: #f3ede1;
+    --secondary-foreground: #23201c;
+    --muted: #f3ede1;
+    --muted-foreground: #665f52;
+    --accent: #f3ede1;
+    --accent-foreground: #23201c;
+    --destructive: #a63d40;
+    --destructive-foreground: #faf7f1;
+    --border: #e6dfd2;
+    --input: #8a8072;
+    --ring: #a8802a;
+    --sidebar: #f6f1e7;
+    --sidebar-foreground: #23201c;
+    --sidebar-primary: #3d5245;
+    --sidebar-primary-foreground: #faf7f1;
+    --sidebar-accent: #ece4d4;
+    --sidebar-accent-foreground: #23201c;
+    --sidebar-border: #e6dfd2;
+    --sidebar-ring: #a8802a;
+    --accent-a: #6b7f5e;
+    --accent-a-text: #4d5c42;
+    --accent-b: #b5726a;
+    --accent-b-text: #8c5249;
+    --gilt: #a8802a;
+    --gilt-text: #7d5f18;
+    --success: #15803d;
+    --success-text: #15803d;
+    --danger-text: #9c3136;
+  }
+  html.dark [data-vertical="wedding"] {
+    --accent-a: #6b7f5e;
+    --accent-a-text: #4d5c42;
+    --accent-b: #b5726a;
+    --accent-b-text: #8c5249;
+    --gilt: #a8802a;
+    --gilt-text: #7d5f18;
+  }
+  html.dark [data-vertical="birthday"] {
+    --accent-a: #b5726a;
+    --accent-a-text: #8c5249;
+    --accent-b: #a8802a;
+    --accent-b-text: #7d5f18;
+    --gilt: #6b7f5e;
+    --gilt-text: #4d5c42;
+  }
+  html.dark [data-vertical="community"] {
+    --accent-a: #5b8299;
+    --accent-a-text: #41627a;
+    --accent-b: #6b7f5e;
+    --accent-b-text: #4d5c42;
+    --gilt: #a8802a;
+    --gilt-text: #7d5f18;
+  }
+}
