@@ -69,19 +69,19 @@ promptwar/
 ```
 
 **Extensions without breaking the canonical shape:** small helpers (`cache` for the server LRU,
-rate limiter, HTML escape, LLM fallback) are colocated *inside* the canonical modules —
+rate limiter, HTML escape, LLM fallback) are colocated _inside_ the canonical modules —
 `lib/genai/client.ts` / `app/api/plan/route.ts` and `lib/security/prompt-guard.ts` — not as
 new top-level directories.
 
 **Import boundaries (enforced by convention + lint):**
 
-| Module | May import | Must never import |
-|---|---|---|
-| `lib/rules-engine/*` | `lib/genai/schemas.ts` (types only) | AI SDK, `fetch`, store, React |
-| `lib/genai/*` | AI SDK, `lib/genai/schemas.ts`, `lib/security` | React components, store |
-| `lib/security/*` | stdlib only | AI SDK, store |
-| `components/*` (client) | `lib/store`, `components/ui` | `lib/genai`, AI SDK, env keys |
-| `app/api/plan/route.ts` | everything server-side | — |
+| Module                  | May import                                     | Must never import             |
+| ----------------------- | ---------------------------------------------- | ----------------------------- |
+| `lib/rules-engine/*`    | `lib/genai/schemas.ts` (types only)            | AI SDK, `fetch`, store, React |
+| `lib/genai/*`           | AI SDK, `lib/genai/schemas.ts`, `lib/security` | React components, store       |
+| `lib/security/*`        | stdlib only                                    | AI SDK, store                 |
+| `components/*` (client) | `lib/store`, `components/ui`                   | `lib/genai`, AI SDK, env keys |
+| `app/api/plan/route.ts` | everything server-side                         | —                             |
 
 `lib/genai/client.ts` starts with `import "server-only"` — the build fails if an API key can
 reach the browser bundle.
@@ -145,8 +145,9 @@ deterministic baseline while the Prompt Guard prepares safe prompt material. The
 meet at step 3, where the baseline is injected as grounded context for `generateObject()`.
 
 **Rules:**
+
 1. **Rules Engine owns all arithmetic** (percentages, totals, variance, dates). LLM never does
-   math — it may only *propose* line items, which are re-priced by the engine.
+   math — it may only _propose_ line items, which are re-priced by the engine.
 2. **Zod is the contract** at every boundary: request body → guard → AI output → hydration →
    store → export.
 3. **Baseline ⊕ enrichment, never replacement:** LLM output cannot delete engine-computed
@@ -160,8 +161,8 @@ meet at step 3, where the baseline is injected as grounded context for `generate
 
 ### Route Handler — `app/api/plan/route.ts` (server-only LLM call)
 
-| Route | Body (Zod) | Returns | LLM? |
-|---|---|---|---|
+| Route            | Body (Zod)        | Returns                                       | LLM?                |
+| ---------------- | ----------------- | --------------------------------------------- | ------------------- |
 | `POST /api/plan` | `PlanInputSchema` | `PlanSchema` (hydrated baseline ⊕ enrichment) | yes (on cache miss) |
 
 This is the **only** LLM route handler. It orchestrates: rate limit → prompt guard → rules
@@ -169,11 +170,11 @@ engine → cache lookup → `generateObject()` → hydration merge → Zod re-va
 
 ### Server Actions (Next.js 16) — mutations
 
-| Action | Purpose |
-|---|---|
-| `savePlanSlice(slice, data)` | Partial plan persistence (budget / timeline / checklist) |
-| `toggleTask(id)` / `updateVendorItem(id, status)` | Checklist mutations |
-| `recalculateBudget(input)` | Server-side re-allocation returning canonical math |
+| Action                                            | Purpose                                                  |
+| ------------------------------------------------- | -------------------------------------------------------- |
+| `savePlanSlice(slice, data)`                      | Partial plan persistence (budget / timeline / checklist) |
+| `toggleTask(id)` / `updateVendorItem(id, status)` | Checklist mutations                                      |
+| `recalculateBudget(input)`                        | Server-side re-allocation returning canonical math       |
 
 Mutations go through Server Actions; generation goes through the Route Handler. No legacy
 `pages/api`, no `getServerSideProps` equivalents. Generation/export never run in a Server
@@ -209,14 +210,15 @@ server-side or via `crypto.randomUUID()`.
 
 ## 4. Security Specifications
 
-| Threat | Control |
-|---|---|
-| Key leakage | `.env.local` only, `server-only` import guard, keys read in `lib/genai/client.ts` alone; `.env.example` shipped redacted; nothing key-shaped in client bundle |
-| Prompt injection | `prompt-guard.ts`: input length cap (2 000 chars), control-char strip, XML-style `<user_input>` delimiters, system prompt orders model to treat delimited content as data only |
-| XSS via LLM output | Escaping helper colocated in `lib/security/prompt-guard.ts` — output rendered as text; no `dangerouslySetInnerHTML` on model content |
-| Resource abuse | Rate limit: e.g. 10 gen/min/IP, `429` with `Retry-After`; timeout on AI calls (e.g. 20 s) |
-| Schema smuggling | `generateObject` + Zod; unknown keys stripped (`strict` schemas where safe) |
-| Dependency risk | No key-vulnerable packages; lockfile committed |
+| Threat             | Control                                                                                                                                                                        |
+| ------------------ | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| Key leakage        | `.env.local` only, `server-only` import guard, keys read in `lib/genai/client.ts` alone; `.env.example` shipped redacted; nothing key-shaped in client bundle                  |
+| Prompt injection   | `prompt-guard.ts`: input length cap (2 000 chars), control-char strip, XML-style `<user_input>` delimiters, system prompt orders model to treat delimited content as data only |
+| XSS via LLM output | Escaping helper colocated in `lib/security/prompt-guard.ts` — output rendered as text; no `dangerouslySetInnerHTML` on model content                                           |
+| Resource abuse     | Rate limit API routes and public Server Actions per IP; API returns `429` + `Retry-After`; AI retries share one 20 s deadline                                                  |
+| Browser policy     | `next.config.ts` sets CSP (`frame-ancestors 'none'`), `X-Content-Type-Options: nosniff`, and a strict referrer policy                                                          |
+| Schema smuggling   | `generateObject` + Zod; unknown keys stripped (`strict` schemas where safe)                                                                                                    |
+| Dependency risk    | No key-vulnerable packages; lockfile committed                                                                                                                                 |
 
 ## 5. Efficiency Specifications
 
@@ -226,7 +228,8 @@ server-side or via `crypto.randomUUID()`.
   per-request bloat; response schema constrains output length; `maxOutputTokens` set per route.
 - **Client:** debounced regeneration (400 ms), no LLM call per keystroke, `useMemo` for derived
   budget math, streamed responses where supported, loading skeletons otherwise.
-- **Retries:** exactly 1 retry on invalid object output, then deterministic fallback (no loops).
+- **Retries:** at most 2 retries on invalid object output, with exponential backoff and jitter
+  bounded by one overall 20-second timeout, then deterministic fallback (no loops).
 
 ---
 
@@ -261,9 +264,9 @@ state for that id.
 
 ## 7. Error Handling Contract
 
-| Failure | Behavior |
-|---|---|
-| Guard rejects input | `400` + field-level Zod issues; UI shows inline errors |
-| Rate limited | `429` + `Retry-After`; UI disables button with countdown |
-| LLM timeout / invalid output | 1 retry → deterministic fallback plan (colocated in `lib/genai/client.ts`) with `meta.source = "fallback"`; banner: "Using offline template plan" |
-| Export failure (client render, e.g. jspdf) | Toast with retry; plan state untouched |
+| Failure                                    | Behavior                                                                                                                                                                      |
+| ------------------------------------------ | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Guard rejects input                        | `400` + field-level Zod issues; UI shows inline errors                                                                                                                        |
+| Rate limited                               | `429` + `Retry-After`; UI disables button with countdown                                                                                                                      |
+| LLM timeout / invalid output               | Up to 2 retries with backoff/jitter → deterministic fallback plan (colocated in `lib/genai/client.ts`) with `meta.source = "fallback"`; banner: "Using offline template plan" |
+| Export failure (client render, e.g. jspdf) | Toast with retry; plan state untouched                                                                                                                                        |

@@ -6,7 +6,7 @@ Binding rules for every AI agent session and every human commit in this reposito
 
 ## 1. Core AI Directive (MANDATORY)
 
-1. **READ BEFORE ACTION** — before generating, refactoring, or debugging *any* code, read
+1. **READ BEFORE ACTION** — before generating, refactoring, or debugging _any_ code, read
    [`CHALLENGE5_MAX_SCORE_RULES.md`](./CHALLENGE5_MAX_SCORE_RULES.md). Zero violations across
    the 6 high-impact parameters: **Code Quality, Security, Efficiency, Testing, Accessibility,
    Problem Statement Alignment.**
@@ -58,7 +58,8 @@ Binding rules for every AI agent session and every human commit in this reposito
 - **Escape LLM output before render.** No `dangerouslySetInnerHTML`/`innerHTML` on model
   content.
 - **Validate + rate-limit:** Zod-validate bodies (`400` with field issues), rate-limit
-  generation (`429` + `Retry-After`), timeout LLM calls, 1 retry max then fallback.
+  generation (`429` + `Retry-After`), use one overall LLM timeout, and allow at most 2 retries
+  with exponential backoff and jitter before deterministic fallback.
 - **No secrets in history:** before any push, `git log -p | grep -iE "sk-|api[_-]?key|token"`
   must come back clean. Never commit `.env*`.
 - Dependencies: keep the tree lean; no new dependency without checking necessity and license.

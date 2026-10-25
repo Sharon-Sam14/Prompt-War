@@ -25,12 +25,12 @@ Complete these prerequisites first:
 
 Failure to follow these rules may result in your submission not being evaluated.
 
-| # | Rule | Requirement |
-|---|------|-------------|
-| 1 | Attempts | **Maximum 3 attempts** allowed |
-| 2 | Repo size | Must be **less than 10 MB** |
-| 3 | Visibility | GitHub repository must be **public** |
-| 4 | Branching | Repository should contain **only one branch** |
+| #   | Rule       | Requirement                                   |
+| --- | ---------- | --------------------------------------------- |
+| 1   | Attempts   | **Maximum 3 attempts** allowed                |
+| 2   | Repo size  | Must be **less than 10 MB**                   |
+| 3   | Visibility | GitHub repository must be **public**          |
+| 4   | Branching  | Repository should contain **only one branch** |
 
 Practical notes to stay compliant:
 
@@ -91,11 +91,11 @@ Your submission must include:
 > **any** of them will drastically lower your standing. There is no "minor" parameter to
 > skip.
 
-| Tier | Weight of your score | Meaning |
-|------|----------------------|---------|
-| 🔴 **High Impact** | Drives most of the final score | **All six evaluation parameters below fall into this tier:** Code Quality, Security, Efficiency, Testing, Accessibility, Problem Statement Alignment. The most important parts of your project — do great here and your score is high; miss here and your standing drops drastically. |
-| 🟡 **Medium Impact** | Steadily elevates / moderately lowers | Supporting work that checks how well the solution holds up under the surface: repo hygiene, commit history quality, documentation depth, deployment/run instructions. A miss **moderately lowers** your score. |
-| 🟢 **Low Impact** | Small boost / polish | Final layers of polish (screenshots/GIFs, animations, extra exports). Excelling gives only a small boost, but you still need them for a **perfect score**. |
+| Tier                 | Weight of your score                  | Meaning                                                                                                                                                                                                                                                                               |
+| -------------------- | ------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| 🔴 **High Impact**   | Drives most of the final score        | **All six evaluation parameters below fall into this tier:** Code Quality, Security, Efficiency, Testing, Accessibility, Problem Statement Alignment. The most important parts of your project — do great here and your score is high; miss here and your standing drops drastically. |
+| 🟡 **Medium Impact** | Steadily elevates / moderately lowers | Supporting work that checks how well the solution holds up under the surface: repo hygiene, commit history quality, documentation depth, deployment/run instructions. A miss **moderately lowers** your score.                                                                        |
+| 🟢 **Low Impact**    | Small boost / polish                  | Final layers of polish (screenshots/GIFs, animations, extra exports). Excelling gives only a small boost, but you still need them for a **perfect score**.                                                                                                                            |
 
 **Bottom line:** treat every one of the six parameters as mandatory high-impact work.
 Balance your effort across **all six** — a perfect score requires each of them, not just
@@ -109,7 +109,7 @@ the ones you enjoy building.
 > score. The rules inside each section are what "doing great" looks like; the checklist at
 > the end of each section is the minimum bar.
 
-### 🔴 Code Quality — *High Impact*
+### 🔴 Code Quality — _High Impact_
 
 **Goal:** structure, readability, maintainability.
 
@@ -134,7 +134,7 @@ prompt logic isolated? Does the repo show incremental, sensible commits?
 
 ---
 
-### 🔴 Security — *High Impact*
+### 🔴 Security — _High Impact_
 
 **Goal:** safe and responsible implementation.
 
@@ -158,7 +158,7 @@ break out of the prompt or the DOM?
 
 ---
 
-### 🔴 Problem Statement Alignment — *High Impact*
+### 🔴 Problem Statement Alignment — _High Impact_
 
 **Goal:** relevance to the stated problem. This is where most submissions quietly fail.
 
@@ -191,7 +191,7 @@ required features and point to the file/section that implements it.
 
 ---
 
-### 🔴 Efficiency — *High Impact*
+### 🔴 Efficiency — _High Impact_
 
 **Goal:** optimal use of resources. A high-impact parameter — resource waste and sluggish
 behavior directly lower your standing.
@@ -214,7 +214,7 @@ could be cached?
 
 ---
 
-### 🔴 Testing — *High Impact*
+### 🔴 Testing — _High Impact_
 
 **Goal:** validation of functionality. A high-impact parameter — an untested solution is
 considered unvalidated and scores poorly no matter how good it looks.
@@ -235,7 +235,7 @@ loudly when logic breaks?
 
 ---
 
-### 🔴 Accessibility — *High Impact*
+### 🔴 Accessibility — _High Impact_
 
 **Goal:** inclusive and usable design. A high-impact parameter — an assistant only a few
 people can use is not a usable solution; missing accessibility drastically lowers your score.
@@ -259,7 +259,7 @@ then do one manual keyboard-only run of the core flow.
 
 ---
 
-### 🟢 README & Submission Polish — *Low Impact* (required for a perfect score)
+### 🟢 README & Submission Polish — _Low Impact_ (required for a perfect score)
 
 - README states: **chosen vertical → approach and logic → how it works → assumptions**.
 - Quick-start with exact commands (install, env setup, run, test).
@@ -283,10 +283,11 @@ build in this order — but treat steps 1–6 as mandatory, equally weighted wor
 7. **README polish (🟢):** screenshots, quick-start, assumptions — then push final commit.
 
 > **Do not trade one high-impact parameter for another.** A submission with perfect code
-> but no tests, or great tests but poor accessibility, will lose points in *both* areas —
+> but no tests, or great tests but poor accessibility, will lose points in _both_ areas —
 > and every one of the six is high impact.
 
 > **Final pre-submission gate**
+>
 > - [ ] Repo is **public**, **single branch**, **< 10 MB**, no secrets anywhere in history
 > - [ ] Tests pass with one documented command
 > - [ ] All 6 evaluation parameters have a corresponding README section or code artifact
