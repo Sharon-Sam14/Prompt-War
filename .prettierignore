@@ -1,0 +1,14 @@
+# build output and tooling caches
+.next
+node_modules
+coverage
+playwright-report
+test-results
+.lighthouseci
+out
+
+# generated / binary / vendored assets
+package-lock.json
+public/**
+docs/screenshots/**
+AGENTS.md
