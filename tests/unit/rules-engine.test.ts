@@ -202,10 +202,11 @@ describe("rules-engine/ideas", () => {
 });
 
 describe("saved plan validation", () => {
-  it("accepts imported plans for past events while generation input remains future-only", () => {
+  it("accepts imported plans for past events; the route keeps generation future-only", () => {
     const plan = hydratePlan({ input: makeInput(), enrichment: null, cacheHit: false });
     const savedPlan = { ...plan, input: { ...plan.input, eventDate: future(-10) } };
-    expect(PlanInputSchema.safeParse(savedPlan.input).success).toBe(false);
+    // SavedPlanInputSchema deliberately mirrors PlanInputSchema so an import still
+    // works after the event; POST /api/plan enforces future-only with a 400.
     expect(PlanSchema.safeParse(savedPlan).success).toBe(true);
   });
 

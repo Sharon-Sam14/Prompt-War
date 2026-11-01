@@ -86,8 +86,6 @@ export function AssistantPanel({ plan }: { plan: Plan }) {
     }
   }
 
-  const modelReady = plan.meta.source === "llm";
-
   return (
     <section
       aria-labelledby="ask-title"
@@ -99,9 +97,7 @@ export function AssistantPanel({ plan }: { plan: Plan }) {
           Ask your planner
         </h3>
         <span className="text-xs text-muted-foreground">
-          {modelReady
-            ? "Answers use your plan's model-enabled context"
-            : "Engine answers — add an API key for model phrasing"}
+          Each reply is labeled with its actual source: Model or Engine fallback.
         </span>
       </div>
 

@@ -1,23 +1,59 @@
 @import "tailwindcss";
-@import "tw-animate-css";
-@import "shadcn/tailwind.css";
 
 /*
- * Theme contract (docs/Design.md v2 — "editorial premium"):
- * cream-paper light / ink-paper dark, deep sage + rose + gold accents.
- * Color values stay literal hex so tests/unit/theme-contrast.test.ts can
- * parse this file and *prove* contrast — do not duplicate them elsewhere.
+ * Theme contract (docs/Design.md v3 → v4, dual theme per Prompt 5 / Memory D44):
+ * TWO themes — light "champagne paper & wine" (the proven baseline, unchanged)
+ * and dark "aubergine & wine" (owner asked for dark mode back, reversing D43).
+ * Light values live in :root; dark values override in the .dark block (and
+ * per-vertical in .dark [data-vertical]). Color values stay literal hex so
+ * tests/unit/theme-contrast.test.ts can parse this file and *prove* contrast in
+ * BOTH themes × all verticals — do not duplicate them elsewhere.
  *
  * Accent roles are per-vertical: the app root stamps data-vertical and the
- * blocks below remap --accent-a / --accent-b (and their -text steps).
+ * blocks below remap --accent-a / --accent-b / --gilt (and their -text steps).
  */
-@custom-variant dark (&:is(.dark *));
 
+/* ==========================================================================
+   Aurora Glow Tokens (added for Prompt 6 overhaul)
+   ========================================================================== */
+
+/* Light Mode — warm champagne & rose glow */
+:root {
+  --font-display-face: Baskerville, "Palatino Linotype", "Book Antiqua", Georgia, serif;
+  --font-body-face: "Palatino Linotype", "Book Antiqua", Palatino, Georgia, serif;
+  --font-script-face: "Segoe Script", "Brush Script MT", cursive;
+  --font-data-face: "Cascadia Mono", "IBM Plex Mono", Consolas, monospace;
+
+  /* Aurora glow tokens (subtle, low-saturation for contrast compliance) */
+  --aurora-1: rgba(217, 168, 198, 0.25);
+  --aurora-2: rgba(166, 124, 30, 0.15);
+  --aurora-3: rgba(107, 15, 34, 0.12);
+
+  /* Light theme surface tokens (upgraded) */
+  --background: #faf8f5;
+  --card: #ffffff;
+  --card-border: rgba(43, 26, 28, 0.08);
+  --nav-bg: rgba(255, 255, 255, 0.75);
+}
+
+/* Dark Mode — deep aubergine, burgundy & muted gold glow */
+.dark {
+  --aurora-1: rgba(142, 36, 54, 0.35);
+  --aurora-2: rgba(217, 176, 79, 0.18);
+  --aurora-3: rgba(60, 20, 35, 0.45);
+
+  /* Dark theme surface tokens */
+  --nav-bg: rgba(28, 17, 21, 0.65);
+}
+
+/* ==========================================================================
+   Original: Theme inline block (must stay for Next.js 16)
+   ========================================================================== */
 @theme inline {
   --color-background: var(--background);
   --color-foreground: var(--foreground);
-  --font-sans: var(--font-geist-sans);
-  --font-mono: var(--font-geist-mono);
+  --font-sans: var(--font-body-face);
+  --font-mono: var(--font-data-face);
   --font-display: var(--font-display-face);
   --color-sidebar-ring: var(--sidebar-ring);
   --color-sidebar-border: var(--sidebar-border);
@@ -49,7 +85,7 @@
   --color-popover: var(--popover);
   --color-card-foreground: var(--card-foreground);
   --color-card: var(--card);
-  /* Design.md v2 semantic tokens (roles, not hues). */
+  /* Design.md v3 semantic tokens (roles, not hues). */
   --color-surface: var(--card);
   --color-accent-a: var(--accent-a);
   --color-accent-a-text: var(--accent-a-text);
@@ -60,6 +96,10 @@
   --color-success: var(--success);
   --color-success-text: var(--success-text);
   --color-danger-text: var(--danger-text);
+  /* Prompt 6 luxury palette (Design.md v5 §2): burgundy / rose / warm ivory. */
+  --color-wine: var(--wine);
+  --color-wine-deep: var(--wine-deep);
+  --color-rose: var(--rose);
   --radius-sm: calc(var(--radius) * 0.6);
   --radius-md: calc(var(--radius) * 0.8);
   --radius-lg: var(--radius);
@@ -69,153 +109,180 @@
   --radius-4xl: calc(var(--radius) * 2.6);
 }
 
-/* Light theme — "cream paper" (Design.md v2). */
+/* ==========================================================================
+   Original: Light theme (:root)
+   ========================================================================== */
+/* The one theme — "champagne paper & wine" (Design.md v3). */
 :root {
-  --background: #faf7f1;
-  --foreground: #23201c;
-  --card: #fdfbf6;
-  --card-foreground: #23201c;
-  --popover: #fdfbf6;
-  --popover-foreground: #23201c;
-  --primary: #3d5245;
-  --primary-foreground: #faf7f1;
-  --secondary: #f3ede1;
-  --secondary-foreground: #23201c;
-  --muted: #f3ede1;
-  --muted-foreground: #665f52;
-  --accent: #f3ede1;
-  --accent-foreground: #23201c;
-  --destructive: #a63d40;
-  --destructive-foreground: #faf7f1;
-  --border: #e6dfd2;
-  --input: #8a8072;
-  --ring: #a8802a;
-  --chart-1: #3d5245;
-  --chart-2: #6b7f5e;
-  --chart-3: #b5726a;
-  --chart-4: #a8802a;
-  --chart-5: #665f52;
-  --sidebar: #f6f1e7;
-  --sidebar-foreground: #23201c;
-  --sidebar-primary: #3d5245;
-  --sidebar-primary-foreground: #faf7f1;
-  --sidebar-accent: #ece4d4;
-  --sidebar-accent-foreground: #23201c;
-  --sidebar-border: #e6dfd2;
-  --sidebar-ring: #a8802a;
-  --radius: 0.5rem;
+  color-scheme: light;
+  --background: #faf8f5;
+  --foreground: #2b1a1c;
+  --card: #ffffff;
+  --card-foreground: #2b1a1c;
+  --popover: #ffffff;
+  --popover-foreground: #2b1a1c;
+  --primary: #6b0f22;
+  --primary-foreground: #f8f2e7;
+  --secondary: #efe4d2;
+  --secondary-foreground: #2b1a1c;
+  --muted: #efe4d2;
+  --muted-foreground: #6f5a55;
+  --accent: #efe4d2;
+  --accent-foreground: #2b1a1c;
+  --destructive: #8f1d28;
+  --destructive-foreground: #fbf6ec;
+  --border: rgba(43, 26, 28, 0.12);
+  --input: #8d7a6f;
+  --ring: #8a6b1f;
+  --chart-1: #6b0f22;
+  --chart-2: #a23b4e;
+  --chart-3: #a67c1e;
+  --chart-4: #1e4d3a;
+  --chart-5: #7a6a60;
+  --sidebar: #f1e8d8;
+  --sidebar-foreground: #2b1a1c;
+  --sidebar-primary: #6b0f22;
+  --sidebar-primary-foreground: #f8f2e7;
+  --sidebar-accent: #e7dbc6;
+  --sidebar-accent-foreground: #2b1a1c;
+  --sidebar-border: rgba(43, 26, 28, 0.12);
+  --sidebar-ring: #8a6b1f;
+  --radius: 0.3rem;
 }
 
-/* Per-vertical accent roles — light (must come after the :root defaults so
-   they win the merge; specificity 0,1,0 like :root). */
+/* ==========================================================================
+   Original: Per-vertical accent roles (light)
+   ========================================================================== */
+/* Per-vertical accent roles (must come after the :root defaults so they win
+   the merge; specificity 0,1,0 like :root). Defaults = wedding. */
 :root {
-  --accent-a: #6b7f5e;
-  --accent-a-text: #4d5c42;
-  --accent-b: #b5726a;
-  --accent-b-text: #8c5249;
-  --gilt: #a8802a;
-  --gilt-text: #7d5f18;
-  --success: #15803d;
-  --success-text: #15803d;
-  --danger-text: #9c3136;
+  --accent-a: #8e2436;
+  --accent-a-text: #6b0f22;
+  --accent-b: #a67c1e;
+  --accent-b-text: #7d5c14;
+  --gilt: #96731a;
+  --gilt-text: #7d5c14;
+  --success: #1c7a4f;
+  --success-text: #1c5c3e;
+  --danger-text: #96182b;
+  --wine: #7d2e3e;
+  --wine-deep: #5b1f2a;
+  --rose: #c87d87;
 }
+/* data-vertical="wedding" */
 [data-vertical="wedding"] {
-  --accent-a: #6b7f5e;
-  --accent-a-text: #4d5c42;
-  --accent-b: #b5726a;
-  --accent-b-text: #8c5249;
-  --gilt: #a8802a;
-  --gilt-text: #7d5f18;
+  --accent-a: #8e2436;
+  --accent-a-text: #6b0f22;
+  --accent-b: #a67c1e;
+  --accent-b-text: #7d5c14;
+  --gilt: #96731a;
+  --gilt-text: #7d5c14;
 }
+/* data-vertical="birthday" */
 [data-vertical="birthday"] {
-  --accent-a: #b5726a;
-  --accent-a-text: #8c5249;
-  --accent-b: #a8802a;
-  --accent-b-text: #7d5f18;
-  --gilt: #6b7f5e;
-  --gilt-text: #4d5c42;
+  --accent-a: #b8737a;
+  --accent-a-text: #8c4a47;
+  --accent-b: #a67c1e;
+  --accent-b-text: #7d5c14;
+  --gilt: #b8737a;
+  --gilt-text: #8c4a47;
 }
+/* data-vertical="community" */
 [data-vertical="community"] {
-  --accent-a: #5b8299;
-  --accent-a-text: #41627a;
-  --accent-b: #6b7f5e;
-  --accent-b-text: #4d5c42;
-  --gilt: #a8802a;
-  --gilt-text: #7d5f18;
+  --accent-a: #1e4d3a;
+  --accent-a-text: #173b2c;
+  --accent-b: #a67c1e;
+  --accent-b-text: #7d5c14;
+  --gilt: #96731a;
+  --gilt-text: #7d5c14;
 }
 
-/* Dark theme — "ink paper" (Design.md v2). */
+/* ==========================================================================
+   Original: Dark theme (.dark)
+   ========================================================================== */
+/* DARK THEME — "aubergine & wine" (Prompt 5 / Memory D44). Overrides :root.
+   Flat, elegant, no glow: near-black aubergine surfaces, plum/lavender as
+   luminous accents. Every pair below is proven ≥ AA by theme-contrast.test.ts
+   across {light,dark} × {base,wedding,birthday,community}. */
 .dark {
-  --background: #191b17;
-  --foreground: #f2ede3;
-  --card: #212420;
-  --card-foreground: #f2ede3;
-  --popover: #212420;
-  --popover-foreground: #f2ede3;
-  --primary: #a9bc96;
-  --primary-foreground: #171a15;
-  --secondary: #2a2e28;
-  --secondary-foreground: #f2ede3;
-  --muted: #2a2e28;
-  --muted-foreground: #b0a695;
-  --accent: #2a2e28;
-  --accent-foreground: #f2ede3;
-  --destructive: #e0a3a3;
-  --destructive-foreground: #2a1517;
-  --border: #38342e;
-  --input: #837a6b;
-  --ring: #c9a24a;
-  --chart-1: #a9bc96;
-  --chart-2: #9fb48e;
-  --chart-3: #cf9a92;
-  --chart-4: #d9b871;
-  --chart-5: #b0a695;
-  --sidebar: #15170f;
-  --sidebar-foreground: #f2ede3;
-  --sidebar-primary: #a9bc96;
-  --sidebar-primary-foreground: #171a15;
-  --sidebar-accent: #2a2e28;
-  --sidebar-accent-foreground: #f2ede3;
-  --sidebar-border: #38342e;
-  --sidebar-ring: #c9a24a;
-  --success: #9fbe86;
-  --success-text: #9fbe86;
-  --danger-text: #e0a3a3;
-  --accent-a: #9fb48e;
-  --accent-a-text: #9fb48e;
-  --accent-b: #cf9a92;
-  --accent-b-text: #cf9a92;
-  --gilt: #d9b871;
-  --gilt-text: #d9b871;
+  color-scheme: dark;
+  --background: #17111a;
+  --foreground: #f6f1e7;
+  --card: #221626;
+  --card-foreground: #f6f1e7;
+  --popover: #221626;
+  --popover-foreground: #f6f1e7;
+  --secondary: #2c2030;
+  --secondary-foreground: #f6f1e7;
+  --muted: #2a1f2e;
+  --muted-foreground: #a69ca8;
+  --accent: #2a1f2e;
+  --accent-foreground: #f6f1e7;
+  --destructive: #c7384b;
+  --destructive-foreground: #ffffff;
+  --border: #3b2b36;
+  --input: #9d8ea2;
+  --ring: #c87d87;
+  --primary: #7d2e3e;
+  --primary-foreground: #f6f1e7;
+  --success: #34b47d;
+  --success-text: #6fdcaa;
+  --danger-text: #ff9aa2;
+  --chart-1: #c87d87;
+  --chart-2: #d98a92;
+  --chart-3: #d9b04f;
+  --chart-4: #4bb088;
+  --chart-5: #a69ca8;
+  --sidebar: #1a121e;
+  --sidebar-foreground: #f6f1e7;
+  --sidebar-primary: #c87d87;
+  --sidebar-primary-foreground: #17111a;
+  --sidebar-accent: #2c2030;
+  --sidebar-accent-foreground: #f6f1e7;
+  --sidebar-border: #3b2b36;
+  --sidebar-ring: #c87d87;
+  --accent-a: #c87d87;
+  --accent-a-text: #f2b6bd;
+  --accent-b: #d9b04f;
+  --accent-b-text: #f3d486;
+  --gilt: #d9b04f;
+  --gilt-text: #f3d486;
+  --wine: #7d2e3e;
+  --wine-deep: #5b1f2a;
+  --rose: #c87d87;
 }
-
-/* Per-vertical accent roles — dark (descendant combinator: .dark lives on
-   <html>, data-vertical on the app root div). */
+/* data-vertical="wedding" in dark */
 .dark [data-vertical="wedding"] {
-  --accent-a: #9fb48e;
-  --accent-a-text: #9fb48e;
-  --accent-b: #cf9a92;
-  --accent-b-text: #cf9a92;
-  --gilt: #d9b871;
-  --gilt-text: #d9b871;
+  --accent-a: #c87d87;
+  --accent-a-text: #f2b6bd;
+  --accent-b: #d9b04f;
+  --accent-b-text: #f3d486;
+  --gilt: #d9b04f;
+  --gilt-text: #f3d486;
+  --rose: #c87d87;
 }
+/* data-vertical="birthday" in dark */
 .dark [data-vertical="birthday"] {
-  --accent-a: #cf9a92;
-  --accent-a-text: #cf9a92;
-  --accent-b: #d9b871;
-  --accent-b-text: #d9b871;
-  --gilt: #9fb48e;
-  --gilt-text: #9fb48e;
+  --accent-a: #d98a92;
+  --accent-a-text: #ffc4c9;
+  --accent-b: #d9b04f;
+  --accent-b-text: #f3d486;
+  --gilt: #d98a92;
+  --gilt-text: #ffc4c9;
 }
+/* data-vertical="community" in dark */
 .dark [data-vertical="community"] {
-  --accent-a: #93b2c4;
-  --accent-a-text: #93b2c4;
-  --accent-b: #9fb48e;
-  --accent-b-text: #9fb48e;
-  --gilt: #d9b871;
-  --gilt-text: #d9b871;
+  --accent-a: #4bb088;
+  --accent-a-text: #85e0b8;
+  --accent-b: #d9b04f;
+  --accent-b-text: #f3d486;
+  --gilt: #4bb088;
+  --gilt-text: #85e0b8;
 }
 
+/* ==========================================================================
+   Original: Base layer
+   ========================================================================== */
 @layer base {
   * {
     @apply border-border outline-ring/50;
@@ -229,9 +296,13 @@
   }
 }
 
+/* ==========================================================================
+   Original: Components layer
+   ========================================================================== */
 @layer components {
-  /* Small-caps kicker above headings (Design.md §2 typography). */
+  /* Data-sheet kicker above headings (Design.md v3 §2 typography: mono). */
   .eyebrow {
+    font-family: var(--font-data-face), ui-monospace, "IBM Plex Mono", monospace;
     font-size: 0.6875rem;
     line-height: 1rem;
     letter-spacing: 0.18em;
@@ -241,6 +312,11 @@
   /* Serif display face for headings and stat numbers. */
   .display {
     font-family: var(--font-display-face), Georgia, "Times New Roman", serif;
+  }
+  /* Script flourish — ONE per screen maximum (Design.md §1 anti-slop rule). */
+  .script {
+    font-family: var(--font-script-face), "Snell Roundhand", "Segoe Script", cursive;
+    font-weight: 400;
   }
   /* Hairline gold rule with an optional center glyph (restrained ornament). */
   .rule-gilt {
@@ -259,6 +335,9 @@
   }
 }
 
+/* ==========================================================================
+   Original: Reduced motion
+   ========================================================================== */
 /* WCAG 2.3.3: honor reduced motion globally. */
 @media (prefers-reduced-motion: reduce) {
   html {
@@ -274,83 +353,197 @@
   }
 }
 
+/* ==========================================================================
+   Original: Tabular numerals
+   ========================================================================== */
 /* Numbers never wrap and align in columns. */
 .tnum {
   font-variant-numeric: tabular-nums;
 }
 
+/* ==========================================================================
+   Original: Print output
+   ========================================================================== */
 /*
  * Print output = stationery (Design.md §4.7). App chrome (header, rail,
  * controls) is hidden with Tailwind print:hidden in markup; this block keeps
- * paper white and re-keys dark mode to the light palette so ink-theme users
- * get legible print too. Selector is html.dark (not .dark) on purpose: the
- * contrast test merges exact ".dark" blocks and must not see these copies.
+ * the paper white. Print always re-keys to light ink so output is legible
+ * regardless of the on-screen theme.
  */
 @media print {
   html,
   body {
     background: #ffffff !important;
+    color: #2b1a1c !important;
   }
-  html.dark {
-    --background: #faf7f1;
-    --foreground: #23201c;
-    --card: #fdfbf6;
-    --card-foreground: #23201c;
-    --popover: #fdfbf6;
-    --popover-foreground: #23201c;
-    --primary: #3d5245;
-    --primary-foreground: #faf7f1;
-    --secondary: #f3ede1;
-    --secondary-foreground: #23201c;
-    --muted: #f3ede1;
-    --muted-foreground: #665f52;
-    --accent: #f3ede1;
-    --accent-foreground: #23201c;
-    --destructive: #a63d40;
-    --destructive-foreground: #faf7f1;
-    --border: #e6dfd2;
-    --input: #8a8072;
-    --ring: #a8802a;
-    --sidebar: #f6f1e7;
-    --sidebar-foreground: #23201c;
-    --sidebar-primary: #3d5245;
-    --sidebar-primary-foreground: #faf7f1;
-    --sidebar-accent: #ece4d4;
-    --sidebar-accent-foreground: #23201c;
-    --sidebar-border: #e6dfd2;
-    --sidebar-ring: #a8802a;
-    --accent-a: #6b7f5e;
-    --accent-a-text: #4d5c42;
-    --accent-b: #b5726a;
-    --accent-b-text: #8c5249;
-    --gilt: #a8802a;
-    --gilt-text: #7d5f18;
-    --success: #15803d;
-    --success-text: #15803d;
-    --danger-text: #9c3136;
+}
+
+/* ==========================================================================
+   Added: Aurora background component structure
+   ========================================================================== */
+.aurora-backdrop {
+  position: absolute;
+  inset: 0;
+  overflow: hidden;
+  pointer-events: none;
+  z-index: 0;
+}
+
+.aurora-blob {
+  position: absolute;
+  filter: blur(80px);
+  border-radius: 50%;
+  opacity: 0.85;
+  will-change: transform;
+}
+
+.aurora-blob-1 {
+  top: -10%;
+  left: 20%;
+  width: 450px;
+  height: 450px;
+  background: radial-gradient(circle, var(--aurora-1) 0%, transparent 70%);
+  animation: aurora-float-1 18s ease-in-out infinite alternate;
+}
+
+.aurora-blob-2 {
+  top: 30%;
+  right: -10%;
+  width: 500px;
+  height: 500px;
+  background: radial-gradient(circle, var(--aurora-2) 0%, transparent 70%);
+  animation: aurora-float-2 22s ease-in-out infinite alternate;
+}
+
+.aurora-blob-3 {
+  bottom: 10%;
+  left: 10%;
+  width: 400px;
+  height: 400px;
+  background: radial-gradient(circle, var(--aurora-3) 0%, transparent 70%);
+  animation: aurora-float-3 15s ease-in-out infinite alternate;
+}
+
+/* ==========================================================================
+   Added: Keyframe animations for Aurora Floating Blobs
+   ========================================================================== */
+
+@keyframes aurora-float-1 {
+  0% {
+    transform: translate(0px, 0px) scale(1);
   }
-  html.dark [data-vertical="wedding"] {
-    --accent-a: #6b7f5e;
-    --accent-a-text: #4d5c42;
-    --accent-b: #b5726a;
-    --accent-b-text: #8c5249;
-    --gilt: #a8802a;
-    --gilt-text: #7d5f18;
+  50% {
+    transform: translate(60px, 40px) scale(1.15);
   }
-  html.dark [data-vertical="birthday"] {
-    --accent-a: #b5726a;
-    --accent-a-text: #8c5249;
-    --accent-b: #a8802a;
-    --accent-b-text: #7d5f18;
-    --gilt: #6b7f5e;
-    --gilt-text: #4d5c42;
+  100% {
+    transform: translate(-40px, 80px) scale(0.95);
   }
-  html.dark [data-vertical="community"] {
-    --accent-a: #5b8299;
-    --accent-a-text: #41627a;
-    --accent-b: #6b7f5e;
-    --accent-b-text: #4d5c42;
-    --gilt: #a8802a;
-    --gilt-text: #7d5f18;
+}
+
+@keyframes aurora-float-2 {
+  0% {
+    transform: translate(0px, 0px) scale(1);
   }
+  50% {
+    transform: translate(-80px, -50px) scale(1.1);
+  }
+  100% {
+    transform: translate(30px, -90px) scale(0.9);
+  }
+}
+
+@keyframes aurora-float-3 {
+  0% {
+    transform: translate(0px, 0px) scale(1);
+  }
+  50% {
+    transform: translate(40px, -60px) scale(1.2);
+  }
+  100% {
+    transform: translate(-50px, 30px) scale(1);
+  }
+}
+
+/* ==========================================================================
+   Added: Glassmorphic Panels & Elevation
+   ========================================================================== */
+
+/* Light glass panel */
+.glass-panel {
+  background: var(--nav-bg);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+  border: 1px solid var(--border);
+}
+
+/* Elevated card with hover glow for vertical cards */
+.event-card {
+  background: var(--card);
+  border: 1px solid var(--card-border);
+  /* Vertical-specific top accent — --accent-a is remapped per data-vertical */
+  border-top: 3px solid var(--accent-a);
+  border-radius: var(--radius-xl);
+  box-shadow:
+    0 1px 2px 0 rgba(0, 0, 0, 0.03),
+    0 1px 3px 1px rgba(0, 0, 0, 0.05);
+  transition: all 300ms cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.event-card:hover {
+  box-shadow:
+    0 20px 25px -5px rgba(0, 0, 0, 0.08),
+    0 8px 10px -6px rgba(0, 0, 0, 0.04);
+  transform: translateY(-4px);
+}
+
+[data-vertical="wedding"] .event-card:hover {
+  border-color: var(--accent-a);
+  box-shadow:
+    0 20px 25px -5px rgba(142, 36, 54, 0.15),
+    0 8px 10px -6px rgba(142, 36, 54, 0.08);
+}
+
+[data-vertical="birthday"] .event-card:hover {
+  border-color: var(--accent-a);
+  box-shadow:
+    0 20px 25px -5px rgba(184, 115, 122, 0.15),
+    0 8px 10px -6px rgba(184, 115, 122, 0.08);
+}
+
+[data-vertical="community"] .event-card:hover {
+  border-color: var(--accent-a);
+  box-shadow:
+    0 20px 25px -5px rgba(30, 77, 58, 0.15),
+    0 8px 10px -6px rgba(30, 77, 58, 0.08);
+}
+
+/* Dark mode card hover adjustments */
+.dark .event-card {
+  box-shadow:
+    0 1px 2px 0 rgba(0, 0, 0, 0.2),
+    0 1px 3px 1px rgba(0, 0, 0, 0.3);
+}
+
+.dark .event-card:hover {
+  box-shadow:
+    0 20px 25px -5px rgba(0, 0, 0, 0.4),
+    0 8px 10px -6px rgba(0, 0, 0, 0.3);
+}
+
+.dark [data-vertical="wedding"] .event-card:hover {
+  box-shadow:
+    0 20px 25px -5px rgba(208, 87, 114, 0.2),
+    0 8px 10px -6px rgba(208, 87, 114, 0.1);
+}
+
+.dark [data-vertical="birthday"] .event-card:hover {
+  box-shadow:
+    0 20px 25px -5px rgba(217, 138, 146, 0.2),
+    0 8px 10px -6px rgba(217, 138, 146, 0.1);
+}
+
+.dark [data-vertical="community"] .event-card:hover {
+  box-shadow:
+    0 20px 25px -5px rgba(75, 176, 136, 0.2),
+    0 8px 10px -6px rgba(75, 176, 136, 0.1);
 }

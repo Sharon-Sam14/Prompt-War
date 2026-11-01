@@ -12,7 +12,8 @@ import type { AskContext, Plan } from "@/lib/genai/schemas";
  */
 
 /** Build the client-side snapshot from a hydrated plan. */
-export function buildAskContext(plan: Plan): AskContext {
+export function buildAskContext(plan: Plan, savedIdeaIds: readonly string[] = []): AskContext {
+  const saved = new Set(savedIdeaIds);
   return {
     vertical: plan.input.vertical,
     eventDate: plan.input.eventDate,
@@ -39,6 +40,7 @@ export function buildAskContext(plan: Plan): AskContext {
       c.items.map((i) => ({ category: c.category, label: i.label, status: i.status })),
     ),
     ideaTitles: plan.ideas.map((i) => i.title),
+    savedIdeaTitles: plan.ideas.filter((i) => saved.has(i.id)).map((i) => i.title),
   };
 }
 
@@ -247,7 +249,11 @@ export function answerFromPlan(question: string, ctx: AskContext): string {
     if (ctx.ideaTitles.length === 0) {
       return "This plan ran in engine-only mode, so there are no personalized ideas yet — budget, timeline and vendor answers still work. Add an API key to generate ideas.";
     }
-    return `${ctx.ideaTitles.length} personalized ideas are saved in the Ideas tab — for example: “${ctx.ideaTitles[0]}”.`;
+    const saved = ctx.savedIdeaTitles ?? [];
+    const example = saved[0] ?? ctx.ideaTitles[0];
+    return saved.length > 0
+      ? `${ctx.ideaTitles.length} personalized ideas, ${saved.length} of them saved by you — for example: “${example}”.`
+      : `${ctx.ideaTitles.length} personalized ideas live in the Ideas tab — for example: “${example}”.`;
   }
 
   // 10) Honest fallback with concrete follow-ups.

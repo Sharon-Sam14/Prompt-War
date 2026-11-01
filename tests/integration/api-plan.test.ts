@@ -14,7 +14,13 @@ vi.mock("ai", () => ({ generateObject: vi.fn() }));
 
 import { generateObject } from "ai";
 
-type GenerateObjectMock = Mock<(opts: { prompt: string }) => Promise<{ object: unknown }>>;
+type GenerateObjectMock = Mock<
+  (opts: {
+    prompt: string;
+    model: { modelId: string };
+    providerOptions?: { openai?: { reasoningEffort?: string } };
+  }) => Promise<{ object: unknown }>
+>;
 const generateObjectMock = generateObject as unknown as GenerateObjectMock;
 
 const { POST } = await import("@/app/api/plan/route");
@@ -99,6 +105,10 @@ describe("POST /api/plan — happy path (mocked LLM)", () => {
     expect(plan.meta.schemaVersion).toBe(1);
     expect(plan.ideas.some((idea: { source: string }) => idea.source === "rules")).toBe(true);
     expect(plan.ideas.some((idea: { source: string }) => idea.source === "llm")).toBe(true);
+    expect(generateObjectMock.mock.calls[0][0].model.modelId).toBe("gpt-6-luna");
+    expect(generateObjectMock.mock.calls[0][0].providerOptions?.openai?.reasoningEffort).toBe(
+      "low",
+    );
     expect(generateObjectMock).toHaveBeenCalledTimes(1);
   });
 
@@ -146,6 +156,25 @@ describe("POST /api/plan — malformed LLM output (bounded retries → fallback)
     expect(res.headers.get("x-plan-source")).toBe("llm");
     expect(generateObjectMock).toHaveBeenCalledTimes(2);
     await res.json();
+  });
+
+  it.each([
+    [
+      "provider authentication errors",
+      Object.assign(new Error("Unauthorized"), { statusCode: 401 }),
+    ],
+    ["provider rate limits", Object.assign(new Error("Too many requests"), { statusCode: 429 })],
+    ["provider timeouts", Object.assign(new Error("Request timed out"), { name: "TimeoutError" })],
+  ])("labels %s as engine fallback without exposing provider details", async (_label, error) => {
+    generateObjectMock.mockRejectedValue(error);
+
+    const res = await post(validInput({ location: "provider-failure-city" }));
+    expect(res.status).toBe(200);
+    expect(res.headers.get("x-plan-source")).toBe("fallback");
+    expect(generateObjectMock).toHaveBeenCalledTimes(3);
+    expect(JSON.stringify(await res.json())).not.toMatch(
+      /Unauthorized|Too many requests|timed out/,
+    );
   });
 });
 

@@ -1,11 +1,12 @@
 "use client";
 
 import Image from "next/image";
-import { Lightbulb } from "lucide-react";
+import { Bookmark, BookmarkCheck, Check, Lightbulb } from "lucide-react";
 import { useMemo, useState } from "react";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent } from "@/components/ui/card";
 import type { Idea } from "@/lib/genai/schemas";
+import { usePlannerStore } from "@/lib/store/use-planner-store";
 
 /**
  * Personalized ideas view with tag filters and a visible provenance badge for
@@ -13,6 +14,11 @@ import type { Idea } from "@/lib/genai/schemas";
  */
 export function IdeasView({ ideas }: { ideas: Idea[] }) {
   const [activeTag, setActiveTag] = useState<string | null>(null);
+  const [feedback, setFeedback] = useState("");
+  const savedIdeaIds = usePlannerStore((state) => state.savedIdeaIds);
+  const appliedIdeaIds = usePlannerStore((state) => state.appliedIdeaIds);
+  const toggleSavedIdea = usePlannerStore((state) => state.toggleSavedIdea);
+  const applyIdea = usePlannerStore((state) => state.applyIdea);
 
   const allTags = useMemo(() => [...new Set(ideas.flatMap((i) => i.tags))].sort(), [ideas]);
   const shown = useMemo(
@@ -46,6 +52,9 @@ export function IdeasView({ ideas }: { ideas: Idea[] }) {
         {activeTag === null
           ? `${ideas.length} personalized idea${ideas.length === 1 ? "" : "s"} generated for your inputs`
           : `Showing ${shown.length} of ${ideas.length} ideas in “${activeTag}”`}
+      </p>
+      <p role="status" aria-live="polite" className="sr-only">
+        {feedback}
       </p>
 
       {/* Tag filters (Design.md §4.8) — client-only state */}
@@ -106,6 +115,47 @@ export function IdeasView({ ideas }: { ideas: Idea[] }) {
                   <Badge variant="outline" className="w-fit text-xs text-muted-foreground">
                     {idea.source === "rules" ? "Rule-based" : "Model-enriched"}
                   </Badge>
+                  <div className="flex flex-wrap gap-2">
+                    <button
+                      type="button"
+                      aria-pressed={savedIdeaIds.includes(idea.id)}
+                      onClick={() => {
+                        const wasSaved = savedIdeaIds.includes(idea.id);
+                        toggleSavedIdea(idea.id);
+                        setFeedback(
+                          wasSaved
+                            ? `${idea.title} removed from saved ideas`
+                            : `${idea.title} saved`,
+                        );
+                      }}
+                      className="inline-flex items-center gap-1 rounded-md border border-border px-2 py-1 text-xs hover:border-gilt focus-visible:ring-2 focus-visible:ring-ring"
+                    >
+                      {savedIdeaIds.includes(idea.id) ? (
+                        <BookmarkCheck aria-hidden="true" className="size-3.5" />
+                      ) : (
+                        <Bookmark aria-hidden="true" className="size-3.5" />
+                      )}
+                      {savedIdeaIds.includes(idea.id) ? "Saved" : "Save idea"}
+                    </button>
+                    <button
+                      type="button"
+                      aria-pressed={appliedIdeaIds.includes(idea.id)}
+                      disabled={appliedIdeaIds.includes(idea.id)}
+                      onClick={() => {
+                        applyIdea(idea.id);
+                        setFeedback(`${idea.title} added to the event brief`);
+                      }}
+                      className="inline-flex items-center gap-1 rounded-md border border-border px-2 py-1 text-xs hover:border-gilt focus-visible:ring-2 focus-visible:ring-ring disabled:cursor-default disabled:opacity-70"
+                    >
+                      <Check aria-hidden="true" className="size-3.5" />
+                      {appliedIdeaIds.includes(idea.id) ? "Applied" : "Apply to event"}
+                    </button>
+                  </div>
+                  {appliedIdeaIds.includes(idea.id) && (
+                    <p className="text-xs text-muted-foreground">
+                      Added to the event brief for future plan regeneration.
+                    </p>
+                  )}
                   {idea.tags.length > 0 && (
                     <ul className="mt-auto flex flex-wrap gap-1 pt-1">
                       {idea.tags.map((tag) => (

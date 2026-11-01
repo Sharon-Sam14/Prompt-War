@@ -38,6 +38,7 @@ const MAX_LLM_RETRIES = 2;
 const RETRY_BASE_MS = 200;
 const RETRY_JITTER_MS = 100;
 const MAX_OUTPUT_TOKENS = 4_000;
+const DEFAULT_OPENAI_MODEL = "gpt-6-luna";
 
 /** Exponential backoff with jitter, capped by the shared request deadline. */
 async function pauseBeforeRetry(
@@ -121,7 +122,13 @@ function getModel() {
     );
   }
   const openai = createOpenAI({ apiKey });
-  return openai(process.env.OPENAI_MODEL ?? "gpt-4o-mini");
+  return openai(process.env.OPENAI_MODEL ?? DEFAULT_OPENAI_MODEL);
+}
+
+/** GPT-6 Luna is reasoning-capable; low effort suits bounded event planning turns. */
+function getProviderOptions() {
+  const modelId = process.env.OPENAI_MODEL ?? DEFAULT_OPENAI_MODEL;
+  return modelId.startsWith("gpt-6-") ? { openai: { reasoningEffort: "low" as const } } : undefined;
 }
 
 /** Cache key: kind + schema version + prompt version + sanitized prompt hash. */
@@ -176,6 +183,7 @@ export async function generateEnrichment(
 
   const deadline = Date.now() + LLM_TIMEOUT_MS;
   const signal = AbortSignal.timeout(LLM_TIMEOUT_MS);
+  const providerOptions = getProviderOptions();
   for (let attempt = 0; attempt <= MAX_LLM_RETRIES; attempt++) {
     try {
       const result = await generateObject({
@@ -185,7 +193,7 @@ export async function generateEnrichment(
         prompt,
         abortSignal: signal,
         maxOutputTokens: MAX_OUTPUT_TOKENS,
-        temperature: 0.4,
+        ...(providerOptions ? { providerOptions } : {}),
       });
       enrichmentCache.set(key, { enrichment: result.object });
       return { enrichment: result.object, cacheHit: false, injectionFlagged };
@@ -234,6 +242,7 @@ export async function generateAnswer(
 
   const deadline = Date.now() + LLM_TIMEOUT_MS;
   const signal = AbortSignal.timeout(LLM_TIMEOUT_MS);
+  const providerOptions = getProviderOptions();
   for (let attempt = 0; attempt <= MAX_LLM_RETRIES; attempt++) {
     try {
       const result = await generateObject({
@@ -243,7 +252,7 @@ export async function generateAnswer(
         prompt,
         abortSignal: signal,
         maxOutputTokens: ASK_MAX_OUTPUT_TOKENS,
-        temperature: 0.3,
+        ...(providerOptions ? { providerOptions } : {}),
       });
       const answer = result.object.answer.trim();
       if (answer) {

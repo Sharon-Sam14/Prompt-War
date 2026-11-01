@@ -15,6 +15,8 @@ export const MAX_FIELD_CHARS: Readonly<Record<string, number>> = {
   location: 200,
   theme: 200,
   culturalNotes: 1_000,
+  name: 120,
+  description: 600,
 };
 
 export interface GuardResult {

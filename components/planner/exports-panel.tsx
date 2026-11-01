@@ -29,11 +29,17 @@ interface ExportRow {
 
 function slugify(plan: Plan): string {
   const date = plan.input.eventDate.slice(0, 10);
-  const theme = plan.input.theme
+  const label = (plan.input.name ?? plan.input.theme)
     ?.toLowerCase()
     .replace(/[^a-z0-9]+/g, "-")
     .replace(/^-+|-+$/g, "");
-  return [plan.input.vertical, theme, date].filter(Boolean).join("-");
+  return [plan.input.vertical, label, date].filter(Boolean).join("-");
+}
+
+/** Export document title — one source for the Markdown H1 and the PDF cover. */
+function exportHeading(plan: Plan): string {
+  const label = plan.input.name ?? plan.input.theme;
+  return label ? `${label} — ${plan.input.vertical} plan` : `${plan.input.vertical} event plan`;
 }
 
 function collectRows(plan: Plan): ExportRow[] {
@@ -100,10 +106,7 @@ function download(content: string, filename: string, mime: string) {
 
 function toMarkdown(plan: Plan): string {
   const lines: Array<string | null> = [];
-  const heading = plan.input.theme
-    ? `${plan.input.theme} — ${plan.input.vertical} plan`
-    : `${plan.input.vertical} event plan`;
-  lines.push(`# ${heading}`, "");
+  lines.push(`# ${exportHeading(plan)}`, "");
   lines.push(
     `- **Date:** ${formatDate(plan.input.eventDate)}`,
     `- **Guests:** ${plan.input.guestCount.toLocaleString()}`,
@@ -163,12 +166,9 @@ async function exportPdf(plan: Plan) {
     }
   };
 
-  const heading = plan.input.theme
-    ? `${plan.input.theme} — ${plan.input.vertical} plan`
-    : `${plan.input.vertical} event plan`;
   doc.setFont("times", "bold");
   doc.setFontSize(22);
-  doc.text(heading, LEFT, y);
+  doc.text(exportHeading(plan), LEFT, y);
   y += 26;
 
   doc.setFont("helvetica", "normal");

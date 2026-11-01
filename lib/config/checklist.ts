@@ -7,7 +7,10 @@ import type { ChecklistItem, Vertical } from "@/lib/genai/schemas";
  * `lib/rules-engine/checklist.ts` instantiates items with ids and status.
  */
 
-export type TemplateItem = Omit<ChecklistItem, "id" | "status">;
+export type TemplateItem = Omit<
+  ChecklistItem,
+  "id" | "status" | "budgetCategoryKey" | "estimatedCents" | "actualCents"
+>;
 export type TemplateCategory = { category: string; items: ReadonlyArray<TemplateItem> };
 
 export const WEDDING_CHECKLIST: ReadonlyArray<TemplateCategory> = [

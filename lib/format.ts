@@ -47,6 +47,11 @@ export function countdown(eventDateIso: string): { days: number; label: string }
   return { days, label: `In ${days} days` };
 }
 
+/** True when a deadline falls inside the next `windowDays` (overdue counts too). */
+export function isDueWithin(dueDateIso: string, windowDays: number): boolean {
+  return new Date(dueDateIso).getTime() - Date.now() <= windowDays * 86_400_000;
+}
+
 /**
  * User-typed money ("1,234.56" / "1234") → integer cents, or null when the
  * string is not a valid non-negative amount. Never throws, never floats out.

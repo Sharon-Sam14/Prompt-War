@@ -58,6 +58,19 @@ function parseBody(raw: unknown): { ok: true; input: PlanInput } | { ok: false; 
   return { ok: false, issues };
 }
 
+/** Optional free-text fields re-sanitized for the stored/echoed plan input. */
+const ECHO_FIELDS = ["name", "location", "theme", "culturalNotes", "description"] as const;
+
+/**
+ * Sanitize one free-text field in place: prompt-guard cap + control-char
+ * stripping, with an empty result dropped — `name` must never collapse to ""
+ * and fail PlanSchema's min(1) downstream.
+ */
+function sanitizeEchoField(input: PlanInput, key: (typeof ECHO_FIELDS)[number]): void {
+  const raw = input[key];
+  if (raw) input[key] = sanitizeUserField(key, raw).value || undefined;
+}
+
 export async function POST(request: NextRequest): Promise<NextResponse> {
   pruneRateLimit();
 
@@ -104,11 +117,7 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
 
     // 2) Prompt Guard is applied inside buildPlanPrompt/generateEnrichment
     //    (sanitize → delimit); free-text fields are re-sanitized here for the input echo.
-    if (input.theme) input.theme = sanitizeUserField("theme", input.theme).value;
-    if (input.culturalNotes) {
-      input.culturalNotes = sanitizeUserField("culturalNotes", input.culturalNotes).value;
-    }
-    if (input.location) input.location = sanitizeUserField("location", input.location).value;
+    for (const key of ECHO_FIELDS) sanitizeEchoField(input, key);
 
     // 3) LLM layer (server-only, cached, 1 retry → null fallback).
     const { enrichment, cacheHit, injectionFlagged } = await generateEnrichment(

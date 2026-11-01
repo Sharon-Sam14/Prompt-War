@@ -10,51 +10,58 @@ This block is written and re-added by `next dev` — verify at `node_modules/nex
 
 # AGENTS.md
 
-Challenge 5 competition entry: **GenAI Celebration & Event Planner** (Next.js 16 App Router, React 19, TS strict, Tailwind v4). Ships to public repo `Sharon-Sam14/Prompt-War` — **single branch `main`**, < 10 MB, ≤ 3 submission attempts.
+Challenge 5 entry: **GenAI Celebration & Event Planner** — Next.js 16 App Router, React 19, TS strict, Tailwind v4. Ships to public repo `Sharon-Sam14/Prompt-War`: single branch `main`, < 10 MB, ≤ 3 submission attempts (logged in `docs/Memory.md` §6).
 
-## Binding docs (read before changing things)
+## Binding docs (read before changing behaviour)
 
-- `docs/CHALLENGE5_MAX_SCORE_RULES.md` — scoring rubric; its pre-submission checklist gates the entry.
-- `docs/Rules.md` — binding conventions: docs-first, Zod at every boundary, engine purity, security, a11y. Conflict order: executable config > Zod schema > prose.
-- `docs/Design.md` (normative UI spec + color contract), `docs/Phases.md` (build order), `docs/Architecture.md` (module/import boundaries), `docs/Memory.md` (decision log — add the next `D##` row + execution-log entry after **every** feature).
+- `docs/CHALLENGE5_MAX_SCORE_RULES.md` — scoring rubric; its checklist gates submission.
+- `docs/Rules.md` — conventions: docs-first, Zod at boundaries, engine purity, security, a11y.
+- `docs/Design.md` (UI spec + color contract), `docs/Architecture.md` (import boundaries), `docs/Phases.md` (build order), `docs/Memory.md` (decision log — newest is **D51**; append a `D##` row plus an execution-log entry after every feature).
+- Conflict order: executable config > Zod schema > prose (`Rules.md` §1).
 
-## Gate order (mirrors `.github/workflows/quality.yml`; all green before any push)
+## Gates (mirror `.github/workflows/quality.yml`; all green before any push)
 
 ```bash
-npm run lint              # eslint, 0 errors
-npm run format:check      # prettier (npm run format to fix)
-npx tsc --noEmit          # strict TS
-npm test                  # vitest: 8 files / ~367 tests, node env, LLM fully mocked
-npm run build             # Next 16 Turbopack production build
-npm run test:e2e          # Playwright: 3 tests, keyless, axe + keyboard + 320px/200% zoom
-npx lhci autorun          # Lighthouse: a11y ≥ .95 and best-practices ≥ .90 are hard errors
+npm run lint          # eslint: 0 errors (warnings tolerated)
+npm run format:check  # prettier (npm run format to fix)
+npx tsc --noEmit      # strict TS
+npm test              # vitest, node env, LLM mocked: 9 files / 377 tests
+npm run build         # Next 16 production build (Webpack + Tailwind PostCSS)
+npm run test:e2e      # Playwright: 10 tests, keyless
+npx lhci autorun      # a11y ≥ .95 and best-practices ≥ .90 are hard errors
 ```
 
-Single test: `npx vitest run tests/unit/rules-engine.test.ts` · single e2e: `npx playwright test -g "name"`. Live smoke check: `node scripts/gate1.mjs` (needs a running server).
+Single test file: `npx vitest run tests/unit/rules-engine.test.ts` · single e2e: `npx playwright test -g "keyboard only"` · live API smoke: `node scripts/gate1.mjs` (needs a server on :3000).
 
-## Gotchas (each one cost time)
+## Gotchas
 
-- **Only one server may own port 3000.** `npm run test:e2e` (`reuseExistingServer: true`) and `npx lhci autorun` both start/expect a server on :3000, and a leftover `npm run start` serves stale `.next` after rebuilds. Kill it first (PowerShell):
+- **Port 3000 serializes everything.** `test:e2e` (`reuseExistingServer: true`) and `lhci` (`startServerCommand: npm run start`) both expect :3000, and a leftover `npm run start` serves stale `.next` after a rebuild. Kill it first (PowerShell):
   `Get-NetTCPConnection -LocalPort 3000 -State Listen | Select-Object -ExpandProperty OwningProcess | ForEach-Object { Stop-Process -Id $_ }`
-- **E2E is serial by design** (`workers: 1`, `fullyParallel: false`, `reducedMotion: "reduce"`): routes rate-limit 10 plans/min/IP. Don't parallelize or "fix" it.
-- **Keyless is the default** — no `OPENAI_API_KEY`; both APIs fall back to the deterministic engine and tests must never need a key. `lib/genai/*` is `server-only` (vitest aliases it to `tests/stubs/server-only.ts`); client components must never import it.
-- `formatMoney` (`lib/format.ts`) uses `Intl` with `minimumFractionDigits: 0` → 5000¢ renders `$50` (locale may render `US$50`). Assertions use regex (`/\$[\d,.]+ \/ guest/`), never exact strings.
-- **Color hex lives ONLY in `app/globals.css`** (never inline in `.tsx`). `tests/unit/theme-contrast.test.ts` matches globals.css by **exact selector text**: use `.dark [data-vertical="…"]` (descendant — `.dark` is on `<html>`, the attribute on a div), and never a bare `.dark` selector inside the `@media print` block.
-- Money is **integer cents** everywhere; allocations must sum exactly (largest-remainder rounding, asserted in tests). The engine owns all math; the LLM may only suggest percentages/offsets, merged where **engine math always wins**.
-- The Zustand store persists to `localStorage` (`promptwar-planner` v1) with `skipHydration: true` — any component reading persisted state must call `useRehydratePlanner()`.
-- `node scripts/screenshots.mjs` regenerates `docs/screenshots/*.jpg` headlessly (the desktop browser screenshot path is blocked by Windows foreground-lock). README references those files — keep names in sync.
-- Prettier deliberately ignores `package-lock.json`, `public/**`, `docs/screenshots/**`, `AGENTS.md`. The nextjs-agent-rules block above is rewritten by `next dev` — commit it, never fight it.
+- **E2E is serial on purpose** (`workers: 1`, `fullyParallel: false`, `reducedMotion: "reduce"`): `/api/plan` is capped at 10/min/IP (ask 30/min, server actions 60/min). Don't parallelize or unset reduced motion.
+- **Keyless is the default**: no `OPENAI_API_KEY` needed — both APIs fall back to the deterministic engine and tests must never require a key. `lib/genai/*` is `server-only` (vitest aliases it to `tests/stubs/server-only.ts`); client components must never import it.
+- **Two setup surfaces, one store.** `/create` (`EventSetupForm`, covered by E2E, **no nav entry** — URL-only since D47) and `/onboarding` (5-step wizard behind the landing CTAs, covered by `tests/e2e/onboarding.spec.ts`) both build a `PlanInput` and call the store's `generatePlan`. Field changes must be mirrored in both.
+- **Local event library.** `promptwar-planner` stores the active event plus `savedPlans`, per-event document trackers, saved/applied idea ids; edits snapshot into the active event entry. `PlanActions` owns save/switch/delete and confirmed delete. Vendor actuals are mapped to budget keys and added to separate manual actuals once.
+- **The app is dark-only since D46.** `class="dark"` is hard-coded on `<html>` and `ThemeProvider` pins `forcedTheme="dark"`. The light `:root` palette in `app/globals.css` survives only because `tests/unit/theme-contrast.test.ts` parses both themes (8 scenarios = {light,dark} × {base,wedding,birthday,community}) using **exact selector text** — keep the block structure when editing tokens.
+- **Gradients exist despite `Design.md`.** §1 still forbids gradients/glass, but the shipped chrome uses `.aurora-backdrop` radial-gradient blobs (on `/`, `/create`, `/onboarding`) and `.glass-panel` (landing nav + search pill, onboarding wizard card). CSS is ground truth: don't flatten them or add new ones without owner sign-off.
+- Colors live only in `app/globals.css` (never inline hex in `.tsx`); per-vertical accents remap via `data-vertical` on a wrapper, dark overrides via `.dark [data-vertical="…"]`.
+- `formatMoney` (`lib/format.ts`) sets `minimumFractionDigits: 0`, so 5000¢ renders `$50` (locale may emit `US$50`). Assert with regex (`/\$[\d,.]+ \/ guest/`), never exact strings.
+- Money is integer cents everywhere and allocations must sum exactly (largest-remainder rounding, test-asserted). The engine owns all math; the LLM may only suggest percentages/day-offsets, and engine math wins on merge.
+- The Zustand store persists to `localStorage` (`promptwar-planner` v1, `skipHydration: true`) — anything reading persisted state must call `useRehydratePlanner()` or SSR markup will mismatch.
+- `node scripts/screenshots.mjs` regenerates `docs/screenshots/*.jpg` headlessly (build + server on :3000 required); README points at those exact filenames.
+- Root `*.log` / `*-output.txt` files are stale gate transcripts — re-run the gate instead of trusting them.
+- Prettier ignores `package-lock.json`, `public/**`, `docs/screenshots/**`, `AGENTS.md`. The `nextjs-agent-rules` block above is rewritten by `next dev` — commit it, never fight it.
+- Windows + PowerShell. Vitest runs files isolated (`isolate: true`) because route-handler tests share module state (in-memory limiter + LRU cache); add tests within a file sequentially.
 
-## Architecture (wiring you'd otherwise guess wrong)
+## Architecture
 
-- Routes: `/` = landing + setup form (`components/landing-page.tsx` + `components/forms/event-setup-form.tsx`); `/plan/[id]` = dashboard (`components/planner/plan-dashboard.tsx`, Radix sidebar tabs, 6 panels). APIs: `app/api/plan`, `app/api/ask`; mutations in `app/actions.ts` (Server Actions are **public endpoints** — each Zod self-validates and is rate-limited).
-- `lib/rules-engine/*` is pure TS (no I/O/React/LLM); templates/weights live in `lib/config/*.ts`. `hydrate.ts` merges optional LLM enrichment; `meta.source: "llm" | "fallback"` must stay honest in UI and exports.
-- Per-vertical theming: `data-vertical="wedding|birthday|community"` on a wrapper re-tints accent roles. All three verticals are first-class — never wedding-centric copy.
-- Anti-slop design contract (Design.md §1, enforced by review): no gradients, glassmorphism, neon, stock photos, AI sparkles, dead links, clickable divs; flat SVG vignettes only (`public/images/vignettes/`).
-- **Navigation is settled (Memory D38):** the v2 spec §1.2 is canonical — landing anchor-nav + dashboard sidebar tablist. An earlier "persistent app-shell" alternative was spec'd in `Design.md`/`Phases.md` then cancelled (Phases 4.9 marked cancelled); don't revive it without an explicit owner request.
+- Routes: `/` = static landing only; `/create` = setup form (`await connection()` + `export const instant = false`, because its date-dependent defaults break `cacheComponents` prerender); `/onboarding` = 5-step wizard linked from the landing hero/vertical cards; `/plan/[id]` = dashboard (`components/planner/plan-dashboard.tsx`, Radix sidebar tablist over `PLANNER_TABS`, 6 panels). Everything is local-first — plans live in `localStorage`, there is no server-side plan storage.
+- APIs: `app/api/plan` (generation), `app/api/ask` (assistant); mutations in `app/actions.ts`. Server Actions are **public endpoints** — each one Zod-validates and rate-limits itself.
+- `lib/rules-engine/*` is pure TS (no I/O/React/LLM); templates/weights live in `lib/config/*.ts`; `hydrate.ts` merges optional LLM enrichment and must keep `meta.source: "llm" | "fallback"` honest in UI and exports.
+- All three verticals (wedding, birthday, community) are first-class — never wedding-centric copy.
+- Photography: bundled Pexels-license JPEGs in `public/images/photos/`, used only in the three sanctioned slots (Design.md §4.6, print-mount framing); hand-drawn SVG only for `empty-ideas.svg` and `app/icon.svg`. No hotlinked stock.
+- Navigation is settled: landing anchor-nav (**no "Create event" entry** — owner removed it, D47) + `/create` route (URL-only) + dashboard sidebar tablist (Memory D38/D46/D47; the `#create` anchor is retired). The earlier "persistent app-shell" alternative stays cancelled — don't revive it without an explicit owner request.
 
-## Session rules (this repo, per owner)
+## Session rules (owner)
 
-- **Never `git commit` / `git push` unless explicitly asked.** Before any agreed push: single branch, remote `origin = Sharon-Sam14/Prompt-War`, secret scan clean (`git log -p | Select-String -Pattern "sk-|API_KEY|TOKEN"`), `git count-objects -vH` < 10 MB, attempt count logged in `docs/Memory.md` §6.
-- Environment is Windows + PowerShell.
-- Any UI change requires: both themes checked, keyboard path intact, `npm run format` on touched files, gate chain re-run, `Memory.md` entry.
+- **Never `git commit` / `git push` unless explicitly asked.** Before an agreed push: single branch `main`, remote `origin = Sharon-Sam14/Prompt-War`, secret scan clean (`git log -p | Select-String -Pattern "sk-|API_KEY|TOKEN"`), `git count-objects -vH` < 10 MB, attempt count updated in `docs/Memory.md` §6.
+- Any UI change requires: all three vertical accents checked (`theme-contrast.test.ts`), keyboard path intact, `npm run format` on touched files, full gate chain re-run, and a `Memory.md` entry.

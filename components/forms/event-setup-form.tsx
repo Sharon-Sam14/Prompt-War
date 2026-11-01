@@ -106,6 +106,7 @@ const MIN_DATE_INPUT = new Date(Date.now() + 86_400_000).toISOString().slice(0, 
 /** Raw string fields — validated and converted on submit, never trusted. */
 interface FormState {
   vertical: PlanInput["vertical"];
+  name: string;
   eventDate: string;
   guestCount: string;
   budget: string;
@@ -120,6 +121,7 @@ interface FormState {
 function initialForm(): FormState {
   return {
     vertical: "wedding",
+    name: "",
     eventDate: defaultDateInput(),
     guestCount: "100",
     budget: "5000",
@@ -138,6 +140,7 @@ function buildPayload(form: FormState): {
 } {
   const draft = {
     vertical: form.vertical,
+    name: form.name.trim() || undefined,
     eventDate: form.eventDate ? new Date(`${form.eventDate}T12:00:00`).toISOString() : "",
     guestCount: Number(form.guestCount),
     budgetTotalCents: parseMoneyToCents(form.budget),
@@ -302,6 +305,21 @@ export function EventSetupForm() {
                   ))}
                 </RadioGroup>
               </fieldset>
+
+              {/* Event name — optional; surfaces in the dashboard masthead, exports and prompts */}
+              <div className="grid gap-2">
+                <Label htmlFor="name">Event name (optional)</Label>
+                <Input
+                  id="name"
+                  placeholder="e.g. Priya & Sam's wedding"
+                  maxLength={120}
+                  value={form.name}
+                  onChange={(e) => update("name", e.target.value)}
+                  aria-invalid={Boolean(issues.name)}
+                  aria-describedby={issues.name ? "name-error" : undefined}
+                />
+                <FieldError id="name-error" message={issues.name} />
+              </div>
 
               <div className="grid gap-5 sm:grid-cols-2">
                 {/* Date */}

@@ -96,15 +96,15 @@ Each vertical ships with its own: default budget allocation ratios, timeline tem
 
 ## 4. Non-Functional Requirements
 
-| Area          | Requirement                                                                                                                                               |
-| ------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| Performance   | Cached LLM responses (server LRU); no API call repeated for identical inputs; streaming or loading states for slow generations; debounced client triggers |
-| Security      | API keys server-side only; all user input sanitized before prompt interpolation; LLM output escaped before render; rate-limited generation endpoints      |
-| Accessibility | WCAG 2.1 AA: keyboard-operable everything, visible focus, labeled inputs, `aria-live` for chat/generation updates, AA contrast in both themes             |
-| Themes        | Native light + dark (`next-themes`, class strategy), no flash of wrong theme                                                                              |
-| Reliability   | LLM failure → deterministic fallback plan; malformed LLM output never reaches UI unvalidated                                                              |
-| Testing       | Vitest unit tests (rules engine, schemas, guards) + mocked-LLM integration tests + Playwright E2E critical path                                           |
-| Repo hygiene  | Public repo, **single branch**, **< 10 MB**, zero secrets in history, **max 3 attempts**                                                                  |
+| Area          | Requirement                                                                                                                                                      |
+| ------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Performance   | Cached LLM responses (server LRU); no API call repeated for identical inputs; streaming or loading states for slow generations; debounced client triggers        |
+| Security      | API keys server-side only; all user input sanitized before prompt interpolation; LLM output escaped before render; rate-limited generation endpoints             |
+| Accessibility | WCAG 2.1 AA: keyboard-operable everything, visible focus, labeled inputs, `aria-live` for chat/generation updates, AA contrast proven across all three verticals |
+| Theme         | Single "champagne paper & wine" mode (owner removed dark mode, Memory D43); per-vertical accent remaps only                                                      |
+| Reliability   | LLM failure → deterministic fallback plan; malformed LLM output never reaches UI unvalidated                                                                     |
+| Testing       | Vitest unit tests (rules engine, schemas, guards) + mocked-LLM integration tests + Playwright E2E critical path                                                  |
+| Repo hygiene  | Public repo, **single branch**, **< 10 MB**, zero secrets in history, **max 3 attempts**                                                                         |
 
 ---
 

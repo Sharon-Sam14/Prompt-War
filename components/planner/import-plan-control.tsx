@@ -2,14 +2,19 @@
 
 import { useRouter } from "next/navigation";
 import { useRef, useState } from "react";
+import { Upload } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { PlanSchema } from "@/lib/genai/schemas";
 import { usePlannerStore } from "@/lib/store/use-planner-store";
 
 const MAX_IMPORT_BYTES = 2_000_000;
 
-/** Import only complete plans that pass the same Zod contract as API output. */
-export function ImportPlanControl() {
+/**
+ * Import only complete plans that pass the same Zod contract as API output.
+ * `compact` renders the command-center toolbar variant (label/help visually
+ * hidden, same accessible wiring) instead of the empty-state block.
+ */
+export function ImportPlanControl({ compact = false }: { compact?: boolean }) {
   const router = useRouter();
   const importPlan = usePlannerStore((state) => state.importPlan);
   const inputRef = useRef<HTMLInputElement>(null);
@@ -40,11 +45,14 @@ export function ImportPlanControl() {
   }
 
   return (
-    <div className="grid justify-items-start gap-2">
-      <label htmlFor="plan-json-import" className="text-sm font-medium">
+    <div className={compact ? "contents" : "grid justify-items-start gap-2"}>
+      <label htmlFor="plan-json-import" className={compact ? "sr-only" : "text-sm font-medium"}>
         Import plan (JSON)
       </label>
-      <p id="plan-json-import-help" className="text-xs text-muted-foreground">
+      <p
+        id="plan-json-import-help"
+        className={compact ? "sr-only" : "text-xs text-muted-foreground"}
+      >
         Load a validated plan export under 2 MB into this browser.
       </p>
       <input
@@ -56,14 +64,20 @@ export function ImportPlanControl() {
         className="sr-only"
         onChange={(event) => void readFile(event.target.files?.[0])}
       />
-      <Button type="button" variant="secondary" onClick={() => inputRef.current?.click()}>
-        Choose JSON file
+      <Button
+        type="button"
+        variant={compact ? "outline" : "secondary"}
+        size={compact ? "sm" : "default"}
+        onClick={() => inputRef.current?.click()}
+      >
+        <Upload aria-hidden="true" className="size-3.5" />
+        {compact ? "Import" : "Choose JSON file"}
       </Button>
       <p
         id="plan-json-import-status"
         role="status"
         aria-live="polite"
-        className="text-xs text-muted-foreground"
+        className={compact ? "sr-only" : "text-xs text-muted-foreground"}
       >
         {message}
       </p>

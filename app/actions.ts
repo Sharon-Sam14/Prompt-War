@@ -1,15 +1,8 @@
 "use server";
 
-import {
-  BudgetSchema,
-  PlanInputSchema,
-  type Budget,
-  type ChecklistCategory,
-  type PlanInput,
-} from "@/lib/genai/schemas";
+import { BudgetSchema, PlanInputSchema, type Budget, type PlanInput } from "@/lib/genai/schemas";
 import { headers } from "next/headers";
 import { buildBudget, totalVarianceCents } from "@/lib/rules-engine/budget";
-import { buildChecklist } from "@/lib/rules-engine/checklist";
 import { createRateLimit } from "@/lib/security/rate-limit";
 
 /**
@@ -63,7 +56,9 @@ export async function recalculateBudget(rawInput: unknown): Promise<ActionResult
   }
 }
 
-/** Server-side variance totals for a budget the client holds (authoritative check). */
+/**
+ * Server-side variance totals for a budget the client holds (authoritative check).
+ */
 export async function computeVariance(rawBudget: unknown): Promise<ActionResult<number>> {
   const limited = await actionRateLimitError<number>();
   if (limited) return limited;
@@ -75,29 +70,4 @@ export async function computeVariance(rawBudget: unknown): Promise<ActionResult<
     };
   }
   return { ok: true, data: totalVarianceCents(parsed.data) };
-}
-
-/**
- * Rebuild a fresh checklist baseline for a vertical (e.g. user switched event type).
- * Client-provided checklist contents are never echoed back — the server returns its
- * own trusted template.
- */
-export async function resetChecklist(
-  rawInput: unknown,
-): Promise<ActionResult<ChecklistCategory[]>> {
-  const limited = await actionRateLimitError<ChecklistCategory[]>();
-  if (limited) return limited;
-  const parsed = PlanInputSchema.safeParse(rawInput);
-  if (!parsed.success) {
-    return {
-      ok: false,
-      issues: parsed.error.issues.map((i) => `${i.path.join(".")}: ${i.message}`).join("; "),
-    };
-  }
-  const input = parsed.data;
-  const lowBudget = input.budgetTotalCents < 200_000;
-  return {
-    ok: true,
-    data: buildChecklist(input.vertical, { isOutdoor: input.isOutdoor, lowBudget }),
-  };
 }

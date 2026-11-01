@@ -16,20 +16,20 @@ Working rules for you: make small incremental commits with clear messages; do no
 
 ### 1.1 Design language (editorial-premium, anti-AI-slop)
 
-- Aesthetic: premium event stationery / editorial command center. Flat, sharp, functional. Two themes via CSS variables on `:root` / `.dark`: cream paper (bg `#faf7f1`, ink `#23201c`) and ink paper (bg `#191b17`, paper `#f2ede3`).
-- Fonts: Playfair Display (`display` class), Geist Sans (UI), Geist Mono (`.eyebrow` uppercase tracking labels, `.tnum` tabular figures).
+- Aesthetic: premium event stationery / editorial command center. Flat, sharp, functional. ONE theme — "champagne paper & wine" (single mode; dark mode removed at the owner's direction, Memory D43): champagne bg `#f6efe3`, card `#fbf6ec`, wine-black ink `#2b1a1c`, burgundy `#6b0f22` primary.
+- Fonts: Cormorant Garamond (`display` class), EB Garamond (body/UI), IBM Plex Mono (`.eyebrow` uppercase tracking labels, `.tnum` tabular figures), Pinyon Script (`.script` — ONE flourish per screen, hero kicker/footer signature only).
 - Color contract: literal hex lives ONLY in `app/globals.css` as role tokens (`--background`, `--foreground`, `--card`, `--border`, `--gilt`, `--accent-a/-b/-text`, `--muted-*`, `--success`, `--danger-*`, `--ring`). Components use utility classes only; zero inline hex in `.tsx`.
-- Per-vertical accent remap: `data-vertical="wedding|birthday|community"` on a wrapper re-tints accent roles (sage+rose / rose+gold / blue+sage), including `.dark [data-vertical]` (never `.dark[data-vertical]`: the class is on `<html>`, the attribute on a div).
+- Per-vertical accent remap: `data-vertical="wedding|birthday|community"` on a wrapper re-tints accent roles (wine+gold / blush+champagne / forest+gold). There is no `.dark` class anywhere.
 - Strictly banned: gradients, glassmorphism/backdrop-blur, neon/glow, 3D glossy objects, AI sparkles, clip-art, stock photos, floating ribbons, decorative sci-fi UI, lorem/dead links, clickable divs.
-- Imagery: hand-drawn flat SVG vignettes in `public/images/vignettes/` (`art-{wedding,birthday,community}.svg`), via `next/image` unoptimized, decorative only (`alt=""`, `aria-hidden`), swapping live with the vertical radios. Keep each SVG small (repo budget).
+- Imagery: bundled Pexels-license photo plates in `public/images/photos/` (`hero-suite`, `wedding-table`, `birthday-cake`, `community-gathering` .jpg), exactly three framed slots (hero band / setup masthead / overview header), decorative (`alt=""`, `aria-hidden`), the vertical ones swapping live with the vertical radios. JPEGs via `next/image` with intrinsic width/height; hand-drawn SVG only for `empty-ideas.svg` + favicon (`unoptimized`). Keep each file ≤ 250 KB (repo budget).
 - Motion: minimal; every animation and transition is disabled under `prefers-reduced-motion: reduce`. Any animation library use is limited to the filtered React Bits subset in 1.7.
 
 ### 1.2 Routes
 
 **`/` Landing + setup form** (server component `components/landing-page.tsx`)
 
-- Skip-to-content link first in the DOM. Sticky nav (solid bg, 1px hairline): brand, uppercase anchors HOME (`aria-current`) · FEATURES · HOW IT WORKS · CREATE EVENT (all real in-page anchors), plus "Local-first, no account" chip and theme toggle. No fake PRICING/SIGN IN.
-- Hero: eyebrow, h1 "Bespoke Event Planning Engine", gilt rule, subtitle, flat gilt-border CTA "CURATE YOUR EVENT" to `#create`.
+- Skip-to-content link first in the DOM. Sticky nav (solid bg, 1px hairline): brand, uppercase anchors HOME (`aria-current`) · FEATURES · HOW IT WORKS · CREATE EVENT (all real in-page anchors), plus "Local-first, no account" chip. No fake PRICING/SIGN IN, no theme toggle (single theme, D43).
+- Hero: Pinyon script kicker (the screen's one flourish), h1 "Bespoke Event Planning Engine", gilt rule, subtitle, flat gilt-border CTA "CURATE YOUR EVENT" to `#create`.
 - Feature grid: 3 bordered cards (Deterministic Budget Ledger, Reverse Timeline Matrix, Vendor Operations Checklist), each with a mono preview line.
 - How it works: 3 numbered steps with mono input-preview boxes.
 - `#create` split form (`components/forms/event-setup-form.tsx`, `data-vertical` wrapper): left brand column (eyebrow, serif h2 "New event plan", gilt rule, promise lines, vertical vignette); right paper Card with: vertical radio cards · date (live T-N days chip, min = tomorrow) · guests (live approx per-guest badge) · budget · currency select · spending-style band (micro/standard/premium) · location · theme · cultural notes + vertical-aware preset chips (fill fields, never bypass validation) · outdoor checkbox ("adds weather-contingency tasks") · Generate button with `aria-live` status and a loading skeleton while generating.
@@ -43,7 +43,7 @@ Working rules for you: make small incremental commits with clear messages; do no
 - TIMELINE: reverse countdown grouped by phase, urgent T-N chips, checkboxes, roving-tabindex keyboard navigation. Lists over 30 items are paginated or collapsed by phase.
 - CHECKLIST: accordion per vendor category (`aria-expanded`/`aria-controls`), per-item status select (to_contact, contacted, quoted, booked), generated inquiry questions and document trackers with checkboxes.
 - IDEAS: idea cards (title, rationale, tags, **source badge: "Rule-based" or "Model-enriched"**) + tag filter chips (`aria-pressed`). Ideas are always present (see 2.2 `ideas.ts`); the LLM adds more, it is never the only source. No fake model output.
-- EXPORTS: PDF (jsPDF, A4), CSV (`@json2csv/plainjs`, rows Section/Item/Planned/Actual/Variance/Date/Status), Markdown, Print (`@media print` hides chrome, re-keys dark mode), and **JSON export/import** of the whole plan so it works across devices. All renderers lazy-`import()`ed inside click handlers (verify via build-manifest scan). Exports read the store, so screen equals file.
+- EXPORTS: PDF (jsPDF, A4), CSV (`@json2csv/plainjs`, rows Section/Item/Planned/Actual/Variance/Date/Status), Markdown, Print (`@media print` hides chrome and keeps paper white), and **JSON export/import** of the whole plan so it works across devices. All renderers lazy-`import()`ed inside click handlers (verify via build-manifest scan). Exports read the store, so screen equals file.
 
 ### 1.3 Assistant behavior (conversational, context-following)
 
@@ -56,18 +56,18 @@ Working rules for you: make small incremental commits with clear messages; do no
 
 - Zustand store `lib/store/use-planner-store.ts`, persist key `promptwar-planner` v1, `skipHydration` + `useSyncExternalStore` rehydration hook. `partialize` keeps only `{input, plan, ui, receivedDocs}`: no status, no error, no identifiers.
 - Flow: generate, store locally, **bookmarkable `/plan/<uuid>` on this device**. Opening it elsewhere shows an honest "No saved plan here" state with an **Import plan (JSON)** button. Do not describe the URL as "shareable".
-- Theme provider with toggle, `suppressHydrationWarning`.
+- Single theme (D43): no theme provider, no toggle, no `suppressHydrationWarning` — `:root` carries the one champagne-paper palette and `color-scheme: light`.
 
 ### 1.5 Responsible-AI disclaimer
 
 Show under Budget, Checklist, Exports and in the footer: "Estimates and vendor suggestions are planning guidance, not quotes. Confirm prices and availability with vendors."
 
-### 1.6 Accessibility contract (WCAG 2.1 AA, both themes, test-enforced)
+### 1.6 Accessibility contract (WCAG 2.1 AA, test-enforced)
 
 - Semantic landmarks (single nav/main/footer), ordered headings, real `<button>`/`<label>`, visible focus rings, roving tabindex in timeline, `aria-live` for totals/answers/generation status, `aria-expanded` accordion, `aria-pressed` chips, `aria-current` nav, no state conveyed by color alone, every icon-only button has an accessible name.
 - Works at **320 px width and 200% zoom** without horizontal scroll (Playwright viewport test). Full core flow operable by keyboard only (Tab/Enter/Space/Esc), no traps.
-- `tests/unit/theme-contrast.test.ts` parses `globals.css` and asserts AA (text >= 4.5:1, UI >= 3:1) across both themes x three verticals. A failing pair fails the build.
-- `@axe-core/playwright` runs on every route in both themes; **serious or critical violations fail the e2e run**. Record a manual keyboard-only run in the README QA matrix.
+- `tests/unit/theme-contrast.test.ts` parses `globals.css` and asserts AA (text >= 4.5:1, UI >= 3:1) across base + three verticals (4 scenarios). A failing pair fails the build.
+- `@axe-core/playwright` runs on landing and dashboard; **serious or critical violations fail the e2e run**. Record a manual keyboard-only run in the README QA matrix.
 
 ### 1.7 Motion layer (React Bits, filtered subset)
 
@@ -92,7 +92,7 @@ Gradients, glassmorphism/backdrop-blur, neon/glow (e.g. SpotlightCard), 3D/tilt 
 **Theme integration**
 
 - Motion components consume role tokens only (`text-foreground`, `border-border`, `text-gilt-text`...); zero inline hex in any `.tsx`.
-- Subtle motion: 200 to 500 ms, ease-out, opacity and small translate only. Works in both themes and all three verticals.
+- Subtle motion: 200 to 500 ms, ease-out, opacity and small translate only. Works across all three verticals.
 
 **Accessibility (non-negotiable)**
 
@@ -111,7 +111,7 @@ Gradients, glassmorphism/backdrop-blur, neon/glow (e.g. SpotlightCard), 3D/tilt 
 **Testing and docs**
 
 - Playwright runs with `reducedMotion: 'reduce'` to avoid flakiness; add one test with motion enabled asserting content is visible and there are zero page errors.
-- axe passes in both themes; the contrast proof still passes.
+- axe passes on every tested route; the contrast proof still passes.
 - Unit-test a small wrapper that returns instant content when reduced motion is set.
 - `docs/Memory.md` records which components were adopted, which were rejected and why, and the measured bundle impact.
 

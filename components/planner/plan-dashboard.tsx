@@ -9,12 +9,12 @@ import {
   Lightbulb,
   Wallet,
 } from "lucide-react";
-import { ThemeToggle } from "@/components/theme-toggle";
 import { BudgetTable } from "@/components/planner/budget-table";
 import { ExportsPanel } from "@/components/planner/exports-panel";
 import { IdeasView } from "@/components/planner/ideas-view";
 import { ImportPlanControl } from "@/components/planner/import-plan-control";
 import { OverviewPanel } from "@/components/planner/overview-panel";
+import { PlanActions, studioName } from "@/components/planner/plan-actions";
 import { TimelineView } from "@/components/planner/timeline-view";
 import { VendorChecklist } from "@/components/planner/vendor-checklist";
 import { Button } from "@/components/ui/button";
@@ -28,10 +28,12 @@ import {
 } from "@/lib/store/use-planner-store";
 
 /**
- * Dashboard shell (Phases.md 3.4): sticky header, 220px sidebar, tab panels
- * (Radix Tabs — arrow-key navigation follows the vertical orientation of the
- * sidebar list). All data comes from the Zod-validated store; nothing here
- * re-derives server truth.
+ * Dashboard shell (Prompt 6 §2): studio header with the utility bar, a
+ * burgundy-tinted sidebar and the six real sections. Tabs keep their original
+ * labels and counts — the e2e suite drives them by role and name.
+ *
+ * All data comes from the Zod-validated store; nothing here re-derives server
+ * truth. Section copy uses the plan's own vertical, never a wedding default.
  */
 
 const TAB_META: Record<PlannerTab, { label: string; icon: React.ElementType }> = {
@@ -42,6 +44,15 @@ const TAB_META: Record<PlannerTab, { label: string; icon: React.ElementType }> =
   ideas: { label: "Ideas", icon: Lightbulb },
   exports: { label: "Exports", icon: Download },
 };
+
+function PanelIntro({ kicker, title }: { kicker: string; title: string }) {
+  return (
+    <div className="mb-4 border-b border-border pb-3">
+      <p className="eyebrow text-accent-a-text">{kicker}</p>
+      <h2 className="display mt-1 text-xl font-semibold">{title}</h2>
+    </div>
+  );
+}
 
 export function PlanDashboard({ planId }: { planId: string }) {
   const hydrated = useRehydratePlanner();
@@ -68,7 +79,7 @@ export function PlanDashboard({ planId }: { planId: string }) {
           </p>
           <ImportPlanControl />
           <Button asChild>
-            <Link href="/">Create a plan</Link>
+            <Link href="/onboarding">Create a plan</Link>
           </Button>
         </div>
       </main>
@@ -94,31 +105,41 @@ export function PlanDashboard({ planId }: { planId: string }) {
   return (
     // data-vertical stamps the accent role remap for the whole subtree (Design.md v2).
     <div data-vertical={plan.input.vertical} className="flex min-h-screen flex-1 flex-col">
-      <header className="sticky top-0 z-10 flex h-12 items-center justify-between gap-4 border-b border-border bg-background px-4 print:hidden">
-        <div className="flex min-w-0 items-baseline gap-3">
-          <Link
-            href="/"
-            className="display shrink-0 text-sm font-semibold text-gilt-text hover:underline"
-            aria-label="Event Planner — home"
-          >
-            <span aria-hidden="true">❦</span> Event Planner
+      <header className="sticky top-0 z-20 border-b border-border bg-background/95 backdrop-blur print:hidden">
+        <div className="mx-auto flex w-full max-w-[1500px] flex-wrap items-center gap-x-4 gap-y-2 px-4 py-2.5 sm:px-6">
+          <Link href="/" className="group flex items-center gap-2.5">
+            <span
+              aria-hidden="true"
+              className="display grid size-9 place-items-center rounded-xl border border-rose/30 bg-wine-deep/50 text-base leading-none text-rose transition-colors group-hover:border-rose/60"
+            >
+              ❦
+            </span>
+            <span className="grid leading-tight">
+              <h1 className="display text-sm font-semibold">{studioName(plan.input.vertical)}</h1>
+              <span className="eyebrow text-[10px] text-muted-foreground">
+                Planning command center
+              </span>
+            </span>
+            <span className="sr-only">— Event Planner home</span>
           </Link>
-          <span aria-hidden="true" className="hidden h-4 w-px bg-border sm:block" />
-          <h1 className="truncate text-xs tracking-[0.14em] uppercase">
-            {plan.input.vertical} · {formatDateTime(plan.input.eventDate)}
-          </h1>
-          <span
-            className={`hidden shrink-0 rounded-full px-2 py-0.5 text-xs sm:inline ${
-              plan.meta.source === "llm"
-                ? "bg-accent-a/15 text-accent-a-text"
-                : "bg-muted text-muted-foreground"
-            }`}
-          >
-            {plan.meta.source === "llm" ? "Model-enriched" : "Engine-only"}
-          </span>
-        </div>
-        <div className="flex items-center gap-1">
-          <ThemeToggle />
+
+          <span aria-hidden="true" className="hidden h-8 w-px bg-border sm:block" />
+          <p className="hidden text-xs text-muted-foreground sm:block">
+            {formatDateTime(plan.input.eventDate)}
+          </p>
+
+          <div className="ml-auto flex flex-wrap items-center justify-end gap-2">
+            <span
+              className={`hidden shrink-0 rounded-full border px-2.5 py-1 text-[11px] sm:inline ${
+                plan.meta.source === "llm"
+                  ? "border-rose/30 bg-wine-deep/40 text-accent-a-text"
+                  : "border-border bg-muted text-muted-foreground"
+              }`}
+            >
+              {plan.meta.source === "llm" ? "Model-enriched" : "Engine-only"}
+            </span>
+            <PlanActions vertical={plan.input.vertical} />
+          </div>
         </div>
       </header>
 
@@ -126,20 +147,26 @@ export function PlanDashboard({ planId }: { planId: string }) {
         value={activeTab}
         onValueChange={(value) => setTab(value as PlannerTab)}
         orientation="vertical"
-        className="grid flex-1 lg:grid-cols-[220px_1fr]"
+        className="grid flex-1 lg:grid-cols-[248px_1fr]"
       >
         <nav
           aria-label="Plan sections"
           className="border-b border-border bg-sidebar lg:border-r lg:border-b-0 print:hidden"
         >
-          <TabsList className="h-auto w-full justify-start gap-1 bg-transparent p-2 lg:flex-col lg:items-stretch">
+          <div className="hidden items-center gap-2 px-4 pt-4 pb-1 lg:flex">
+            <span aria-hidden="true" className="script text-lg leading-none text-rose">
+              ❦
+            </span>
+            <span className="eyebrow text-[10px] text-muted-foreground">Sections</span>
+          </div>
+          <TabsList className="h-auto w-full justify-start gap-1 overflow-x-auto rounded-none bg-transparent p-2 lg:flex-col lg:items-stretch">
             {PLANNER_TABS.map((tab) => {
               const Icon = TAB_META[tab].icon;
               return (
                 <TabsTrigger
                   key={tab}
                   value={tab}
-                  className="eyebrow justify-start gap-2 data-[state=active]:border-l-2 data-[state=active]:border-gilt data-[state=active]:bg-accent data-[state=active]:text-foreground"
+                  className="eyebrow justify-start gap-2 rounded-lg border-l-2 border-transparent px-3 py-2 data-[state=active]:border-gilt data-[state=active]:bg-accent data-[state=active]:text-foreground"
                 >
                   <Icon aria-hidden="true" className="size-4" />
                   {TAB_META[tab].label}
@@ -154,40 +181,42 @@ export function PlanDashboard({ planId }: { planId: string }) {
           </TabsList>
         </nav>
 
-        <main id="main-content" className="min-w-0 flex-1 p-4 sm:p-6">
-          <TabsContent value="overview" className="mt-0">
-            <OverviewPanel plan={plan} />
-          </TabsContent>
-          <TabsContent value="budget" className="mt-0">
-            <p className="eyebrow text-gilt-text">Where the money goes</p>
-            <h2 className="display mb-4 text-xl font-semibold">Budget</h2>
-            <BudgetTable
-              currency={plan.input.currency}
-              totalCents={plan.input.budgetTotalCents}
-              categories={plan.budget.categories}
-              contingencyPct={plan.budget.contingencyPct}
-            />
-          </TabsContent>
-          <TabsContent value="timeline" className="mt-0">
-            <p className="eyebrow text-gilt-text">Reverse countdown</p>
-            <h2 className="display mb-4 text-xl font-semibold">Timeline</h2>
-            <TimelineView tasks={plan.timeline} />
-          </TabsContent>
-          <TabsContent value="checklist" className="mt-0">
-            <p className="eyebrow text-gilt-text">Vendors &amp; documents</p>
-            <h2 className="display mb-4 text-xl font-semibold">Vendor Checklist</h2>
-            <VendorChecklist checklist={plan.checklist} />
-          </TabsContent>
-          <TabsContent value="ideas" className="mt-0">
-            <p className="eyebrow text-gilt-text">Personalised suggestions</p>
-            <h2 className="display mb-4 text-xl font-semibold">Ideas</h2>
-            <IdeasView ideas={plan.ideas} />
-          </TabsContent>
-          <TabsContent value="exports" className="mt-0">
-            <p className="eyebrow text-gilt-text">PDF · CSV · Markdown · Print</p>
-            <h2 className="display mb-4 text-xl font-semibold">Exports</h2>
-            <ExportsPanel plan={plan} />
-          </TabsContent>
+        <main id="main-content" className="min-w-0 flex-1 px-4 py-5 sm:px-6 lg:py-6">
+          <div className="mx-auto w-full max-w-[1120px]">
+            <TabsContent value="overview" className="mt-0">
+              <OverviewPanel plan={plan} />
+            </TabsContent>
+            <TabsContent value="budget" className="mt-0">
+              <PanelIntro kicker="Where the money goes" title="Budget planner" />
+              <BudgetTable
+                currency={plan.input.currency}
+                totalCents={plan.input.budgetTotalCents}
+                categories={plan.budget.categories}
+                checklist={plan.checklist}
+                contingencyPct={plan.budget.contingencyPct}
+              />
+            </TabsContent>
+            <TabsContent value="timeline" className="mt-0">
+              <PanelIntro kicker="Reverse countdown" title="Tasks & milestones" />
+              <TimelineView tasks={plan.timeline} />
+            </TabsContent>
+            <TabsContent value="checklist" className="mt-0">
+              <PanelIntro kicker="Vendors & documents" title="Vendor management" />
+              <VendorChecklist
+                checklist={plan.checklist}
+                budgetCategories={plan.budget.categories}
+                currency={plan.input.currency}
+              />
+            </TabsContent>
+            <TabsContent value="ideas" className="mt-0">
+              <PanelIntro kicker="Personalised suggestions" title="Inspiration" />
+              <IdeasView ideas={plan.ideas} />
+            </TabsContent>
+            <TabsContent value="exports" className="mt-0">
+              <PanelIntro kicker="PDF · CSV · Markdown · Print" title="Reports & exports" />
+              <ExportsPanel plan={plan} />
+            </TabsContent>
+          </div>
         </main>
       </Tabs>
     </div>

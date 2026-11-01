@@ -16,7 +16,8 @@ import {
 import { formatMoney, parseMoneyToCents, pctOf } from "@/lib/format";
 import { usePlannerStore } from "@/lib/store/use-planner-store";
 import { VendorDisclaimer } from "@/components/planner/vendor-disclaimer";
-import type { BudgetCategory } from "@/lib/genai/schemas";
+import type { BudgetCategory, ChecklistCategory } from "@/lib/genai/schemas";
+import { vendorTotalForCategory } from "@/lib/store/use-planner-store";
 
 /**
  * Budget table (Phases.md 3.5): editable planned/actual cells, per-row variance
@@ -29,6 +30,7 @@ interface BudgetTableProps {
   currency: string;
   totalCents: number;
   categories: BudgetCategory[];
+  checklist: ChecklistCategory[];
   contingencyPct: number;
 }
 
@@ -117,6 +119,7 @@ export function BudgetTable({
   currency,
   totalCents,
   categories,
+  checklist,
   contingencyPct,
 }: BudgetTableProps) {
   const editCategory = usePlannerStore((s) => s.editCategory);
@@ -130,16 +133,24 @@ export function BudgetTable({
   const localTotals = useMemo(() => {
     let planned = 0;
     let actual = 0;
+    let manual = 0;
+    let vendors = 0;
     let hasActual = false;
     for (const c of categories) {
       planned += c.plannedCents;
+      const vendorActual = vendorTotalForCategory(checklist, c.key);
+      const manualActual =
+        c.manualActualCents ??
+        (c.actualCents === null ? null : Math.max(0, c.actualCents - vendorActual));
+      if (manualActual !== null) manual += manualActual;
+      vendors += vendorActual;
       if (c.actualCents !== null) {
         actual += c.actualCents;
         hasActual = true;
       }
     }
-    return { planned, actual, hasActual };
-  }, [categories]);
+    return { planned, actual, manual, vendors, hasActual };
+  }, [categories, checklist]);
 
   const varianceCents = localTotals.hasActual ? localTotals.actual - localTotals.planned : 0;
   const overBudget = varianceCents > 0;
@@ -200,13 +211,19 @@ export function BudgetTable({
             <TableRow>
               <TableHead className="min-w-40">Category</TableHead>
               <TableHead className="w-44 text-right">Planned</TableHead>
-              <TableHead className="w-44 text-right">Actual</TableHead>
+              <TableHead className="w-36 text-right">Manual actual</TableHead>
+              <TableHead className="w-32 text-right">Vendor actual</TableHead>
+              <TableHead className="w-36 text-right">Actual total</TableHead>
               <TableHead className="w-28 text-right">Variance</TableHead>
               <TableHead className="w-32">Share</TableHead>
             </TableRow>
           </TableHeader>
           <TableBody>
             {categories.map((c) => {
+              const vendorActual = vendorTotalForCategory(checklist, c.key);
+              const manualActual =
+                c.manualActualCents ??
+                (c.actualCents === null ? null : Math.max(0, c.actualCents - vendorActual));
               const variance = c.actualCents === null ? null : c.actualCents - c.plannedCents;
               return (
                 <TableRow key={c.key}>
@@ -223,11 +240,17 @@ export function BudgetTable({
                   </TableCell>
                   <TableCell>
                     <MoneyCell
-                      value={c.actualCents}
+                      value={manualActual}
                       currency={currency}
-                      label={`Actual amount for ${c.label}`}
+                      label={`Manual actual amount for ${c.label}`}
                       onCommit={(cents) => editCategory(c.key, { actualCents: cents })}
                     />
+                  </TableCell>
+                  <TableCell className="tnum text-right font-mono text-sm">
+                    {vendorActual > 0 ? formatMoney(vendorActual, currency) : "—"}
+                  </TableCell>
+                  <TableCell className="tnum text-right font-mono text-sm">
+                    {c.actualCents === null ? "—" : formatMoney(c.actualCents, currency)}
                   </TableCell>
                   <TableCell className="tnum text-right font-mono text-sm">
                     {variance === null ? (
@@ -262,6 +285,12 @@ export function BudgetTable({
               <TableCell className="font-semibold">Total</TableCell>
               <TableCell className="tnum text-right font-mono font-semibold">
                 {formatMoney(localTotals.planned, currency)}
+              </TableCell>
+              <TableCell className="tnum text-right font-mono font-semibold">
+                {formatMoney(localTotals.manual, currency)}
+              </TableCell>
+              <TableCell className="tnum text-right font-mono font-semibold">
+                {localTotals.vendors > 0 ? formatMoney(localTotals.vendors, currency) : "—"}
               </TableCell>
               <TableCell className="tnum text-right font-mono font-semibold">
                 {localTotals.hasActual ? formatMoney(localTotals.actual, currency) : "—"}

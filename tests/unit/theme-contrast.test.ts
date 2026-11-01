@@ -3,11 +3,12 @@ import { fileURLToPath } from "node:url";
 import { describe, expect, it } from "vitest";
 
 /**
- * Accessibility proof for the Design.md v2 theme contract:
- * parse app/globals.css (all scope blocks merged) and assert every meaningful
- * token pair meets WCAG 2.1 AA in BOTH themes AND for EVERY vertical accent
- * remap — text ≥ 4.5:1, UI boundaries/focus rings ≥ 3:1 (SC 1.4.3 / 1.4.11).
- * If the palette changes, this test is the reviewer.
+ * Accessibility proof for the Design.md v3→v4 DUAL-THEME contract (Memory D44):
+ * light "champagne paper & wine" + dark "aubergine & wine".
+ * Parse app/globals.css (all scope blocks merged, in document order so dark
+ * wins) and assert every meaningful token pair meets WCAG AA for BOTH themes ×
+ * EVERY vertical accent remap — text ≥ 4.5:1, UI boundaries/focus rings ≥ 3:1
+ * (SC 1.4.3 / 1.4.11). If either palette changes, this test is the reviewer.
  */
 
 const CSS = readFileSync(fileURLToPath(new URL("../../app/globals.css", import.meta.url)), "utf8");
@@ -34,20 +35,19 @@ function tokensFor(...selectors: string[]): Record<string, string> {
 
 const VERTICALS = ["wedding", "birthday", "community"] as const;
 
-/** theme × vertical → merged token map. */
+/** theme × vertical → merged token map, blocks applied in DOCUMENT ORDER so
+ *  dark (.dark, .dark [data-vertical]) overrides light (:root, [data-vertical])
+ *  exactly as the browser cascade does. 8 scenarios total. */
 const SCENARIOS: Array<[string, Record<string, string>]> = [
-  ["light/base", tokensFor(":root")],
+  ["base", tokensFor(":root")],
   ...VERTICALS.map(
     (v) =>
-      [`light/${v}`, tokensFor(":root", `[data-vertical="${v}"]`)] as [
-        string,
-        Record<string, string>,
-      ],
+      [`${v}`, tokensFor(":root", `[data-vertical="${v}"]`)] as [string, Record<string, string>],
   ),
-  ["dark/base", tokensFor(":root", ".dark")],
+  ["dark", tokensFor(":root", ".dark")],
   ...VERTICALS.map(
     (v) =>
-      [`dark/${v}`, tokensFor(":root", ".dark", `.dark [data-vertical="${v}"]`)] as [
+      [`dark ${v}`, tokensFor(":root", ".dark", `.dark [data-vertical="${v}"]`)] as [
         string,
         Record<string, string>,
       ],
@@ -137,9 +137,13 @@ describe.each(SCENARIOS)("theme contrast (%s)", (scenarioName, tokens) => {
   });
 });
 
-it("per-vertical accents are actually distinct in light theme", () => {
-  const [w, b, c] = ["wedding", "birthday", "community"].map(
-    (v) => SCENARIOS.find(([name]) => name === `light/${v}`)![1]["--accent-a"]!,
-  );
-  expect(new Set([w, b, c]).size).toBe(3);
+it("per-vertical accents are actually distinct", () => {
+  for (const themePrefix of ["", "dark "]) {
+    const accents = VERTICALS.map(
+      (v) => SCENARIOS.find(([name]) => name === `${themePrefix}${v}`)![1]["--accent-a"]!,
+    );
+    expect(new Set(accents).size, `${themePrefix.trim() || "light"} accent-a values distinct`).toBe(
+      3,
+    );
+  }
 });

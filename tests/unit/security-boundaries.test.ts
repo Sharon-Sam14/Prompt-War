@@ -19,4 +19,17 @@ describe("rendering security boundary", () => {
       .join("\n");
     expect(source).not.toMatch(/dangerouslySetInnerHTML|\binnerHTML\b/);
   });
+
+  it("keeps OpenAI credentials inside the server-only service", () => {
+    const roots = [resolve(process.cwd(), "app"), resolve(process.cwd(), "components")];
+    const browserSource = roots
+      .flatMap(sourceFiles)
+      .filter((path) => readFileSync(path, "utf8").includes('"use client"'))
+      .map((path) => readFileSync(path, "utf8"))
+      .join("\n");
+    const service = readFileSync(resolve(process.cwd(), "lib/genai/client.ts"), "utf8");
+
+    expect(browserSource).not.toMatch(/process\.env|from ["']@\/lib\/genai\/client["']/);
+    expect(service.startsWith('import "server-only";')).toBe(true);
+  });
 });

@@ -16,25 +16,33 @@ design system (docs/Design.md is normative; docs-first protocol: update Design.m
 BEFORE any code; update docs/Memory.md after every feature).
 
 ## Design system (one glance)
-- Two themes via class strategy (next-themes): LIGHT = "cream paper"
-  (#FAF7F1 canvas, #FDFBF6 cards, deep-sage #3D5245 primary); DARK = "ink paper"
-  (#191B17 canvas, #F2EDE3 cream text, sage-cream #A9BC96 primary). All color
+- ONE theme — "champagne paper & wine" (single mode; dark mode removed at the
+  owner's direction, Memory D43 — no next-themes, no provider, no toggle):
+  #F6EFE3 canvas, #FBF6EC cards, wine-black #2B1A1C ink, deep-wine #6B0F22
+  primary, antique-gold #8A6B1F ring, deep-green #1C7A4F success. All color
   pairs are proven WCAG AA by tests/unit/theme-contrast.test.ts, which parses
   app/globals.css — NEVER move hex values out of globals.css.
-- Typography: Playfair Display (display serif: headings, stat numbers, italic
-  taglines) + Geist Sans (all data/UI). Utility classes: .eyebrow (11px
-  uppercase, 0.18em tracking), .display (serif), .rule-gilt (hairline gold rule
-  with ❦ glyph), .tnum (tabular numerals for money/dates).
+- Typography: Cormorant Garamond (display serif: headings, stat numbers) +
+  EB Garamond (body/UI) + IBM Plex Mono (money cells, codes, eyebrows) +
+  Pinyon Script (ONE flourish per screen — hero kicker/footer signature only).
+  Utility classes: .eyebrow (11px mono uppercase, 0.18em tracking), .display
+  (serif), .script (Pinyon flourish), .rule-gilt (hairline gold rule with ❦
+  glyph), .tnum (tabular numerals for money/dates).
 - Per-vertical accent roles: app root stamps data-vertical
   (wedding|birthday|community) and CSS remaps --accent-a/--accent-b/--gilt
-  (wedding sage+rose, birthday rose+gold, community blue+sage). Components only
-  use role classes: bg-accent-a, text-accent-a-text, bg-accent-b, text-gilt,
-  text-success-text, text-danger-text — never raw hex, never hue names.
-- Imagery: hand-drawn flat SVG line art in public/images/ (art-wedding.svg,
-  art-birthday.svg, art-community.svg, empty-ideas.svg) + app/icon.svg favicon.
-  Mid-tone strokes so they read on both themes; always rendered via next/image
-  with unoptimized, alt="", aria-hidden (decorative). No gradients, glass,
-  blobs, clip-art, stock photos (Design.md §1 anti-slop table).
+  (wedding wine+gold, birthday blush+champagne, community forest+gold).
+  Components only use role classes: bg-accent-a, text-accent-a-text,
+  bg-accent-b, text-gilt, text-success-text, text-danger-text — never raw hex,
+  never hue names.
+- Imagery: bundled Pexels-license photo plates in public/images/photos/
+  (hero-suite.jpg, wedding-table.jpg, birthday-cake.jpg,
+  community-gathering.jpg) used in exactly three framed slots — landing hero
+  band, setup masthead, dashboard overview header (Design.md §4.6). Mount =
+  card paper + 1 px gilt hairline, object-cover, no shadow/overlay/filter.
+  Hand-drawn SVG stays only for the empty state (empty-ideas.svg) + favicon
+  (app/icon.svg). Photos: next/image through the optimizer, intrinsic
+  width/height declared, alt="" aria-hidden (atmosphere only). No hotlinked
+  stock, gradients, glass, blobs, clip-art (Design.md §1 anti-slop table).
 
 ## Pages and how one leads to another
 
@@ -43,7 +51,8 @@ BEFORE any code; update docs/Memory.md after every feature).
    call Date.now() during render; min date = tomorrow as a module const).
    - components/forms/event-setup-form.tsx. Masthead: eyebrow "GenAI Celebration
      & Event Planner" + serif h1 "New event plan" + gilt rule, with a vertical
-     SVG vignette that swaps live with the selected event type (data-vertical on
+     photo plate (community-gathering/wedding-table/birthday-cake .jpg) that
+     swaps live with the selected event type (data-vertical on
      the wrapper retints radios/gilt as you pick).
    - Form (all Zod-validated client-side with the SAME PlanInputSchema the
      server uses; client validation is UX, server re-validates): event type
@@ -69,7 +78,7 @@ BEFORE any code; update docs/Memory.md after every feature).
      * OVERVIEW (components/planner/overview-panel.tsx):
        plan banner (eyebrow "OUR PLAN" → serif h1 from theme/vertical, e.g.
        "The Wedding" → date · guests · location line → italic serif tagline)
-       with the vertical SVG vignette at right; then a 4-stat-card row
+       with the vertical photo plate at right; then a 4-stat-card row
        (Progress = CSS conic-gradient ring + %, Budget, Guests, Countdown),
        "This week's priorities" (next 3 open timeline tasks), Provenance badges
        + Regenerate, and Total Budget editor whose "Reallocate" calls the

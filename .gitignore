@@ -36,6 +36,10 @@ yarn-debug.log*
 yarn-error.log*
 .pnpm-debug.log*
 
+# generated logs / scratch output (never commit)
+*.log
+*-output.txt
+
 # env files (can opt-in for committing if needed)
 .env*
 !.env.example

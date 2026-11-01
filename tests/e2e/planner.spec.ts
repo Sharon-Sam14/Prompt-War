@@ -2,6 +2,8 @@ import { expect, test } from "@playwright/test";
 import AxeBuilder from "@axe-core/playwright";
 
 async function expectNoSeriousAxeViolations(page: import("@playwright/test").Page) {
+  // Panels can reveal over 400 ms; audit their settled state, not mid-transition colors.
+  await page.waitForTimeout(700);
   const results = await new AxeBuilder({ page })
     .withTags(["wcag2a", "wcag2aa", "wcag21a", "wcag21aa"])
     .analyze();
@@ -22,7 +24,7 @@ test("setup → generate → edit → export", async ({ page }) => {
   const pageErrors: string[] = [];
   page.on("pageerror", (err) => pageErrors.push(err.message));
 
-  // ---- Landing shell: hero h1 + form section (Design.md §4.10) -------------
+  // ---- Landing shell: hero h1 + nav landmark (Design.md §4.10) ------------
   const landingResponse = await page.goto("/");
   expect(landingResponse?.headers()["content-security-policy"]).toContain("frame-ancestors 'none'");
   expect(landingResponse?.headers()["x-content-type-options"]).toBe("nosniff");
@@ -32,14 +34,10 @@ test("setup → generate → edit → export", async ({ page }) => {
   await page.keyboard.press("Enter");
   expect(new URL(page.url()).hash).toBe("#main-content");
   await expect(
-    page.getByRole("heading", { level: 1, name: "Bespoke Event Planning Engine" }),
+    page.getByRole("heading", { level: 1, name: "Your celebration, handled" }),
   ).toBeVisible();
-  await expect(page.getByRole("heading", { level: 2, name: "New event plan" })).toBeVisible();
   await expect(page.getByRole("navigation", { name: "Site" })).toBeVisible();
   await expectNoSeriousAxeViolations(page);
-  await page.getByRole("button", { name: "Switch to dark theme" }).click();
-  await expectNoSeriousAxeViolations(page);
-  await page.getByRole("button", { name: "Switch to light theme" }).click();
 
   await page.setViewportSize({ width: 320, height: 800 });
   expect(
@@ -61,8 +59,33 @@ test("setup → generate → edit → export", async ({ page }) => {
   await page.setViewportSize({ width: 1280, height: 900 });
   await page.emulateMedia({ reducedMotion: "no-preference" });
   await expect(
-    page.getByRole("heading", { level: 1, name: "Bespoke Event Planning Engine" }),
+    page.getByRole("heading", { level: 1, name: "Your celebration, handled" }),
   ).toBeVisible();
+
+  // ---- Setup form lives on its own route (/create) ------------------------
+  await page.goto("/create");
+  await expect(page.getByRole("heading", { level: 2, name: "New event plan" })).toBeVisible();
+  await expectNoSeriousAxeViolations(page);
+
+  // The form is the densest layout — prove it fits a 320 px / 200 % viewport.
+  await page.setViewportSize({ width: 320, height: 800 });
+  expect(
+    await page.evaluate(
+      () => document.documentElement.scrollWidth <= document.documentElement.clientWidth,
+    ),
+  ).toBe(true);
+  await page.evaluate(() => {
+    document.documentElement.style.zoom = "200%";
+  });
+  expect(
+    await page.evaluate(
+      () => document.documentElement.scrollWidth <= document.documentElement.clientWidth,
+    ),
+  ).toBe(true);
+  await page.evaluate(() => {
+    document.documentElement.style.zoom = "";
+  });
+  await page.setViewportSize({ width: 1280, height: 900 });
 
   // Live previews: ≈ per-guest badge (5000 / 100) and the T− chip after a date.
   // formatMoney uses minimumFractionDigits: 0 → "$50 / guest", not "$50.00".
@@ -74,17 +97,17 @@ test("setup → generate → edit → export", async ({ page }) => {
   await page.getByRole("button", { name: "Sangeet & reception" }).click();
   await expect(page.getByLabel("Cultural notes (optional)")).toHaveValue(/Sangeet/);
 
+  // The optional event name travels all the way into the dashboard masthead.
+  await page.getByLabel("Event name (optional)").fill("Aarav & Meera's Wedding");
+
   // ---- Generate -----------------------------------------------------------
   await page.getByRole("button", { name: "Generate plan" }).click();
   await page.waitForURL(/\/plan\/[0-9a-f-]{36}$/);
   const planUrl = page.url();
   await expect(
-    page.getByRole("heading", { level: 2, name: /Sangeet & reception wedding/ }),
+    page.getByRole("heading", { level: 2, name: "Aarav & Meera's Wedding" }),
   ).toBeVisible();
   await expectNoSeriousAxeViolations(page);
-  await page.getByRole("button", { name: "Switch to dark theme" }).click();
-  await expectNoSeriousAxeViolations(page);
-  await page.getByRole("button", { name: "Switch to light theme" }).click();
 
   // ---- Assistant: keyless engine answer from plan context -----------------
   await page.getByRole("button", { name: "How many tasks are left?" }).click();
@@ -92,6 +115,7 @@ test("setup → generate → edit → export", async ({ page }) => {
 
   // ---- Budget: commit a planned cell -------------------------------------
   await page.getByRole("tab", { name: "Budget" }).click();
+  await expectNoSeriousAxeViolations(page);
   const plannedCell = page.locator("tbody input").first();
   await plannedCell.fill("999");
   await plannedCell.press("Enter");
@@ -99,6 +123,7 @@ test("setup → generate → edit → export", async ({ page }) => {
 
   // ---- Timeline: toggle the first task ------------------------------------
   await page.getByRole("tab", { name: "Timeline" }).click();
+  await expectNoSeriousAxeViolations(page);
   const firstTaskLabel = page.getByText("Ceremony and reception", { exact: true });
   await firstTaskLabel.click();
   await expect(page.getByRole("checkbox", { name: "Ceremony and reception" })).toHaveAttribute(
@@ -108,13 +133,27 @@ test("setup → generate → edit → export", async ({ page }) => {
 
   // ---- Checklist: move a vendor to Booked --------------------------------
   await page.getByRole("tab", { name: "Checklist" }).click();
+  await expectNoSeriousAxeViolations(page);
   const statusSelect = page.getByLabel(/^Status for/).first();
   await statusSelect.click();
   await page.getByRole("option", { name: "Booked", exact: true }).click();
   await expect(statusSelect).toContainText("Booked");
 
+  // ---- Ideas: save and apply without leaving the plan ---------------------
+  await page.getByRole("tab", { name: "Ideas" }).click();
+  await expectNoSeriousAxeViolations(page);
+  const saveIdeaButton = page.getByRole("button", { name: "Save idea" }).first();
+  await saveIdeaButton.click();
+  await expect(page.getByRole("button", { name: "Saved", exact: true }).first()).toHaveAttribute(
+    "aria-pressed",
+    "true",
+  );
+  await page.getByRole("button", { name: "Apply to event" }).first().click();
+  await expect(page.getByRole("button", { name: "Applied" }).first()).toBeDisabled();
+
   // ---- Exports: CSV, Markdown and PDF all download -----------------------
   await page.getByRole("tab", { name: "Exports" }).click();
+  await expectNoSeriousAxeViolations(page);
   await expect(
     page.getByText("Exports read directly from your open plan", { exact: false }),
   ).toBeVisible();
@@ -152,7 +191,7 @@ test("setup → generate → edit → export", async ({ page }) => {
   await expect(page.getByRole("heading", { name: "No saved plan here" })).toBeVisible();
   await page.locator("#plan-json-import").setInputFiles(jsonPath!);
   await expect(
-    page.getByRole("heading", { level: 2, name: /Sangeet & reception wedding/ }),
+    page.getByRole("heading", { level: 2, name: "Aarav & Meera's Wedding" }),
   ).toBeVisible();
 
   await page.getByRole("tab", { name: "Exports" }).click();
@@ -164,10 +203,61 @@ test("setup → generate → edit → export", async ({ page }) => {
   // … and so does the plan itself
   await page.getByRole("tab", { name: "Overview" }).click();
   await expect(
-    page.getByRole("heading", { level: 2, name: /Sangeet & reception wedding/ }),
+    page.getByRole("heading", { level: 2, name: "Aarav & Meera's Wedding" }),
   ).toBeVisible();
 
   expect(pageErrors).toEqual([]);
+});
+
+test("saved events persist, switch independently, and delete with confirmation", async ({
+  page,
+}) => {
+  await page.goto("/create");
+  await page.getByLabel("Event name (optional)").fill("Library wedding");
+  await page.getByLabel("Event date").fill("2027-06-12");
+  await page.getByRole("button", { name: "Generate plan" }).click();
+  await page.waitForURL(/\/plan\/[0-9a-f-]{36}$/);
+  const firstPlanId = new URL(page.url()).pathname.split("/").at(-1)!;
+  await page.getByRole("tab", { name: "Ideas" }).click();
+  await page.getByRole("button", { name: "Save idea" }).first().click();
+  await page.getByRole("button", { name: "Save event" }).click();
+
+  // Load sample through the real generation endpoint; creating it snapshots the
+  // existing event into the event library instead of replacing it.
+  await page.getByRole("button", { name: "Load sample" }).click();
+  await page.getByRole("alertdialog").getByRole("button", { name: "Load sample" }).click();
+  await page.waitForURL((url) => url.pathname !== `/plan/${firstPlanId}`);
+  const samplePlanId = new URL(page.url()).pathname.split("/").at(-1)!;
+  await expect(
+    page.getByRole("heading", { level: 1, name: "Wedding Planning Studio" }),
+  ).toBeVisible();
+
+  const eventSelect = page.getByLabel("Switch saved event");
+  await eventSelect.selectOption(firstPlanId);
+  await page.getByRole("button", { name: "Switch event" }).click();
+  await page.waitForURL(new RegExp(`/plan/${firstPlanId}$`));
+  await expect(page.getByRole("heading", { level: 2, name: "Library wedding" })).toBeVisible();
+
+  await page.reload();
+  await expect(page.getByRole("heading", { level: 2, name: "Library wedding" })).toBeVisible();
+  await page.getByRole("tab", { name: "Ideas" }).click();
+  await expect(page.getByRole("button", { name: "Saved", exact: true }).first()).toHaveAttribute(
+    "aria-pressed",
+    "true",
+  );
+  await expect(
+    page.getByLabel("Switch saved event").locator(`option[value="${samplePlanId}"]`),
+  ).toHaveCount(1);
+
+  // Deleting an inactive event leaves the active plan untouched.
+  await eventSelect.selectOption(samplePlanId);
+  await page.getByRole("button", { name: "Delete selected saved event" }).click();
+  await page.getByRole("alertdialog").getByRole("button", { name: "Delete event" }).click();
+  await page.getByRole("tab", { name: "Overview" }).click();
+  await expect(page.getByRole("heading", { level: 2, name: "Library wedding" })).toBeVisible();
+  await expect(
+    page.getByLabel("Switch saved event").locator(`option[value="${samplePlanId}"]`),
+  ).toHaveCount(0);
 });
 
 /**
@@ -187,16 +277,18 @@ test.describe("motion enabled", () => {
 
     // Hero reveal (trigger="mount") settles at full opacity.
     await expect(
-      page.getByRole("heading", { level: 1, name: "Bespoke Event Planning Engine" }),
+      page.getByRole("heading", { level: 1, name: "Your celebration, handled" }),
     ).toHaveCSS("opacity", "1");
 
     // Staggered lists reveal fully — and no arming class is left behind
     // anywhere (the 1200 ms safety timer guarantees this even off-screen).
+    // Hover affordances are excluded by contract: they are `opacity-0` at rest.
     await expect(page.locator("#features li")).toHaveCount(3);
     await expect(page.locator("#how-it-works li")).toHaveCount(3);
-    await expect(page.locator(".opacity-0")).toHaveCount(0);
+    await expect(page.locator("main .opacity-0:not([data-hover-affordance])")).toHaveCount(0);
 
     // ---- Generate a plan with known values so the count-up is checkable ----
+    await page.goto("/create");
     await page.getByLabel("Event date").fill("2027-06-12");
     await page.getByLabel("Guests", { exact: true }).fill("25");
     await page.getByLabel("Total budget").fill("5000");
@@ -272,21 +364,24 @@ test.describe("keyboard only", () => {
     await page.keyboard.press("Enter");
     expect(new URL(page.url()).hash).toBe("#main-content");
 
+    // ---- Setup form is its own route now -----------------------------------
+    await page.goto("/create");
+
     // ---- Hydration gate -----------------------------------------------------
-    // Radix handlers only exist after React hydrates; a keyboard activation of
-    // the theme toggle proves it before the rest of the run depends on it.
-    const toDark = page.getByRole("button", { name: "Switch to dark theme" });
-    const toLight = page.getByRole("button", { name: "Switch to light theme" });
-    await walkTo(toDark);
-    await page.keyboard.press("Enter");
-    await expect(toLight).toBeFocused();
-    await page.keyboard.press("Enter");
-    await expect(toDark).toBeFocused();
+    // The setup form is a client component: React state only re-renders the
+    // live per-guest badge once handlers are attached, so a native fill that
+    // changes the badge proves hydration before the rest of the run depends
+    // on the Radix controls below.
+    const perGuest = page.getByText(/\$[\d,.]+ \/ guest/);
+    const perGuestBefore = await perGuest.innerText();
+    await page.getByLabel("Guests", { exact: true }).fill("50");
+    await expect(perGuest).not.toHaveText(perGuestBefore);
 
     // ---- Event type: reachable and changeable with arrow keys ---------------
     const weddingRadio = page.getByRole("radio", { name: /Wedding/ });
     const birthdayRadio = page.getByRole("radio", { name: /Birthday/ });
-    await walkTo(weddingRadio);
+    // Focus sits in the Guests field (from the hydration gate) — walk back.
+    await walkTo(weddingRadio, "Shift+Tab");
     await expect(weddingRadio).toBeChecked();
     await pressAndHold("ArrowRight");
     await expect(birthdayRadio).toBeFocused();
@@ -299,6 +394,7 @@ test.describe("keyboard only", () => {
      * dropped stop (focus escaping to <body>) fails the assertion at that step.
      */
     const setupOrder: Array<[string, import("@playwright/test").Locator]> = [
+      ["Event name", page.getByLabel("Event name (optional)")],
       ["Event date", page.getByLabel("Event date")],
       ["Guests", page.getByLabel("Guests", { exact: true })],
       ["Total budget", page.getByLabel("Total budget")],

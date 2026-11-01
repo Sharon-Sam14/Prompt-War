@@ -2,6 +2,7 @@
 
 import { ChevronDown, FileCheck2, HelpCircle } from "lucide-react";
 import { useState } from "react";
+import { Input } from "@/components/ui/input";
 import { Reveal } from "@/components/motion/reveal";
 import { Badge } from "@/components/ui/badge";
 import { Checkbox } from "@/components/ui/checkbox";
@@ -15,7 +16,13 @@ import {
 } from "@/components/ui/select";
 import { usePlannerStore } from "@/lib/store/use-planner-store";
 import { VendorDisclaimer } from "@/components/planner/vendor-disclaimer";
-import { type ChecklistCategory, type VendorStatus } from "@/lib/genai/schemas";
+import { parseMoneyToCents } from "@/lib/format";
+import {
+  type BudgetCategory,
+  type ChecklistCategory,
+  type ChecklistItem,
+  type VendorStatus,
+} from "@/lib/genai/schemas";
 
 /**
  * Vendor checklist (Phases.md 3.7): per-category groups of vendors with
@@ -34,10 +41,76 @@ const STATUS_META: Record<VendorStatus, { label: string; className: string }> = 
 
 const STATUSES = Object.keys(STATUS_META) as VendorStatus[];
 
-export function VendorChecklist({ checklist }: { checklist: ChecklistCategory[] }) {
+function VendorCostInput({
+  item,
+  itemKey,
+  kind,
+  currency,
+  setVendorCosts,
+}: {
+  item: ChecklistItem;
+  itemKey: string;
+  kind: "estimatedCents" | "actualCents";
+  currency: string;
+  setVendorCosts: ReturnType<typeof usePlannerStore.getState>["setVendorCosts"];
+}) {
+  const [draft, setDraft] = useState<string | null>(null);
+  const value = item[kind] ?? null;
+  const label = `${kind === "estimatedCents" ? "Estimated" : "Actual"} cost for ${item.label}`;
+  const shown = draft ?? (value === null ? "" : (value / 100).toFixed(2));
+  const invalid = draft !== null && draft !== "" && parseMoneyToCents(draft) === null;
+
+  function commit() {
+    if (draft === null) return;
+    const cents = draft === "" ? null : parseMoneyToCents(draft);
+    if (draft !== "" && cents === null) {
+      setDraft(null);
+      return;
+    }
+    setVendorCosts(itemKey, {
+      estimatedCents: kind === "estimatedCents" ? cents : (item.estimatedCents ?? null),
+      actualCents: kind === "actualCents" ? cents : (item.actualCents ?? null),
+      budgetCategoryKey: item.budgetCategoryKey ?? null,
+    });
+    setDraft(null);
+  }
+
+  return (
+    <label className="grid gap-1 text-xs text-muted-foreground">
+      {kind === "estimatedCents" ? `Estimate (${currency})` : `Actual cost (${currency})`}
+      <Input
+        aria-label={label}
+        aria-invalid={invalid}
+        inputMode="decimal"
+        value={shown}
+        onChange={(event) => setDraft(event.target.value)}
+        onBlur={commit}
+        onKeyDown={(event) => {
+          if (event.key === "Enter") {
+            event.preventDefault();
+            commit();
+          }
+          if (event.key === "Escape") setDraft(null);
+        }}
+        className="h-8 w-28 text-xs"
+      />
+    </label>
+  );
+}
+
+export function VendorChecklist({
+  checklist,
+  budgetCategories,
+  currency,
+}: {
+  checklist: ChecklistCategory[];
+  budgetCategories: BudgetCategory[];
+  currency: string;
+}) {
   const setItemStatus = usePlannerStore((s) => s.setItemStatus);
   const receivedDocs = usePlannerStore((s) => s.receivedDocs);
   const toggleDocReceived = usePlannerStore((s) => s.toggleDocReceived);
+  const setVendorCosts = usePlannerStore((s) => s.setVendorCosts);
 
   // Accordion UI state (Design.md §4.3) — local only, never persisted.
   const [openCats, setOpenCats] = useState<Record<number, boolean>>({});
@@ -124,6 +197,45 @@ export function VendorChecklist({ checklist }: { checklist: ChecklistCategory[] 
                             </SelectContent>
                           </Select>
                         </div>
+                      </div>
+
+                      <div className="grid gap-2 border-t border-border pt-2 sm:grid-cols-[minmax(10rem,1fr)_auto_auto] sm:items-end">
+                        <label className="grid gap-1 text-xs text-muted-foreground">
+                          Budget category
+                          <select
+                            aria-label={`Budget category for ${item.label}`}
+                            value={item.budgetCategoryKey ?? ""}
+                            onChange={(event) =>
+                              setVendorCosts(itemKey, {
+                                estimatedCents: item.estimatedCents ?? null,
+                                actualCents: item.actualCents ?? null,
+                                budgetCategoryKey: event.target.value || null,
+                              })
+                            }
+                            className="h-8 rounded-lg border border-input bg-background px-2 text-xs text-foreground focus-visible:ring-2 focus-visible:ring-ring"
+                          >
+                            <option value="">Not linked</option>
+                            {budgetCategories.map((category) => (
+                              <option key={category.key} value={category.key}>
+                                {category.label}
+                              </option>
+                            ))}
+                          </select>
+                        </label>
+                        <VendorCostInput
+                          item={item}
+                          itemKey={itemKey}
+                          kind="estimatedCents"
+                          currency={currency}
+                          setVendorCosts={setVendorCosts}
+                        />
+                        <VendorCostInput
+                          item={item}
+                          itemKey={itemKey}
+                          kind="actualCents"
+                          currency={currency}
+                          setVendorCosts={setVendorCosts}
+                        />
                       </div>
 
                       {item.questions.length > 0 && (

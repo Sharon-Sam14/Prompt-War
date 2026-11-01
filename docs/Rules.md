@@ -106,6 +106,6 @@ Copy this to the top of your working notes for every task:
 - [ ] Types strict, no `any`, Zod at boundaries, prompts isolated
 - [ ] No key/secret near client code; input guarded; output escaped
 - [ ] Tests added/updated — `npm test` green
-- [ ] Keyboard + AA contrast verified for touched UI (both themes)
+- [ ] Keyboard + AA contrast verified for touched UI (`theme-contrast.test.ts` green for all verticals)
 - [ ] `Memory.md` updated: completed, decisions, state changes, next task
 - [ ] Gate order run: lint → tsc → test → build

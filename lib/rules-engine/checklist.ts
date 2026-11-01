@@ -15,6 +15,9 @@ function toItems(template: ReadonlyArray<TemplateCategory>): ChecklistCategory[]
       ...i,
       id: randomUUID(),
       status: "to_contact" as const,
+      budgetCategoryKey: null,
+      estimatedCents: null,
+      actualCents: null,
     })),
   }));
 }

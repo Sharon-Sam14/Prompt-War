@@ -21,6 +21,8 @@ export type VendorStatus = z.infer<typeof VendorStatusSchema>;
 /** User input that drives plan generation. */
 const PlanInputFieldsSchema = z.object({
   vertical: VerticalSchema,
+  /** Optional name the user gives the event (wizard step 2 / setup form). */
+  name: z.string().trim().min(1).max(120).optional(),
   eventDate: z.iso.datetime({ offset: true }),
   guestCount: z.number().int().min(1).max(10_000),
   /** Total budget in integer cents. */
@@ -34,14 +36,13 @@ const PlanInputFieldsSchema = z.object({
   location: z.string().trim().max(200).optional(),
   theme: z.string().trim().max(200).optional(),
   culturalNotes: z.string().trim().max(1_000).optional(),
+  /** Free-text vision/must-haves — reaches the model as delimited context. */
+  description: z.string().trim().max(600).optional(),
   isOutdoor: z.boolean().default(false),
 });
 
-/** Input accepted for new plan generation; event date must still be in future. */
-export const PlanInputSchema = PlanInputFieldsSchema.refine(
-  (input) => new Date(input.eventDate).getTime() > Date.now(),
-  { path: ["eventDate"], message: "eventDate must be in the future" },
-);
+/** Input accepted for new plan generation; event date validated on client. */
+export const PlanInputSchema = PlanInputFieldsSchema;
 
 /** Saved plans remain importable after their event date has passed. */
 export const SavedPlanInputSchema = PlanInputFieldsSchema;
@@ -54,6 +55,8 @@ export const BudgetCategorySchema = z.object({
   label: z.string().min(1).max(80),
   plannedCents: z.number().int().min(0),
   actualCents: z.number().int().min(0).nullable().default(null),
+  /** Manual portion is kept separate when vendor actuals roll into actualCents. */
+  manualActualCents: z.number().int().min(0).nullable().optional(),
 });
 
 export const BudgetSchema = z.object({
@@ -86,6 +89,9 @@ export const ChecklistItemSchema = z.object({
   questions: z.array(z.string().min(1).max(300)).max(20).default([]),
   /** Documents to collect from this vendor. */
   docs: z.array(z.string().min(1).max(160)).max(20).default([]),
+  budgetCategoryKey: z.string().min(1).max(64).nullable().optional().default(null),
+  estimatedCents: z.number().int().min(0).nullable().optional().default(null),
+  actualCents: z.number().int().min(0).nullable().optional().default(null),
 });
 
 export type ChecklistItem = z.infer<typeof ChecklistItemSchema>;
@@ -217,6 +223,8 @@ export const AskContextSchema = z.object({
     )
     .max(400),
   ideaTitles: z.array(z.string().min(1).max(160)).max(30),
+  /** Titles the user explicitly bookmarked in the Ideas tab (empty if none). */
+  savedIdeaTitles: z.array(z.string().min(1).max(160)).max(30).optional(),
 });
 
 export type AskContext = z.infer<typeof AskContextSchema>;

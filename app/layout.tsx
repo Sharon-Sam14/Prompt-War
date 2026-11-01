@@ -1,25 +1,6 @@
 import type { Metadata } from "next";
-import { Geist, Geist_Mono, Playfair_Display } from "next/font/google";
 import { ThemeProvider } from "@/components/providers/theme-provider";
 import "./globals.css";
-
-const geistSans = Geist({
-  variable: "--font-geist-sans",
-  subsets: ["latin"],
-});
-
-const geistMono = Geist_Mono({
-  variable: "--font-geist-mono",
-  subsets: ["latin"],
-});
-
-// Editorial display serif (Design.md v2 §2): headings, stat numbers, banner.
-const playfair = Playfair_Display({
-  variable: "--font-display-face",
-  subsets: ["latin"],
-  style: ["normal", "italic"],
-  display: "swap",
-});
 
 export const metadata: Metadata = {
   title: "Event Planner — GenAI celebration & event planning",
@@ -29,13 +10,14 @@ export const metadata: Metadata = {
 
 export default function RootLayout({ children }: LayoutProps<"/">) {
   return (
-    // suppressHydrationWarning: next-themes writes the .dark class on <html>
-    // after hydration; the warning would be noise, not a bug.
-    <html
-      lang="en"
-      suppressHydrationWarning
-      className={`${geistSans.variable} ${geistMono.variable} ${playfair.variable} h-full antialiased`}
-    >
+    /*
+      `dark` is hard-coded: the app is dark-only (owner direction 2026-10-27),
+      so the very first server-rendered byte is already "aubergine & wine" —
+      no light flash, and the UI stays dark even with JavaScript disabled.
+      suppressHydrationWarning: next-themes' no-flash script also writes the
+      class before React hydrates, so the server className may be touched.
+    */
+    <html lang="en" suppressHydrationWarning className="dark h-full antialiased">
       <body className="min-h-full flex flex-col">
         <a
           href="#main-content"
