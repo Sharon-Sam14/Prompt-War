@@ -169,6 +169,8 @@ export function answerFromPlan(question: string, ctx: AskContext): string {
       .filter((t) => !t.done)
       .sort((a, b) => a.offsetDays - b.offsetDays)
       .slice(0, 3);
+    if (ctx.tasks.length === 0)
+      return "This plan doesn't include timeline information, so I can't identify the next task yet.";
     if (open.length === 0) return "Every task on the timeline is already done.";
     const list = open
       .map((t) => `${t.title} (${formatDate(t.dueDate)}, T−${t.offsetDays}d)`)

@@ -12,6 +12,8 @@ import type { AskContext, PlanInput } from "@/lib/genai/schemas";
  */
 
 const future = (days: number) => new Date(Date.now() + days * 86_400_000).toISOString();
+const numbersIn = (text: string) =>
+  (text.match(/[\d][\d,]*/g) ?? []).map((number) => number.replace(/,+$/, ""));
 
 function ctx(overrides: Partial<AskContext> = {}): AskContext {
   return {
@@ -75,6 +77,31 @@ describe("answerFromPlan — timeline, progress, vendors", () => {
     expect(a).toContain("Book the venue"); // both open tasks fit the top-3 window
   });
 
+  it("reports missing timeline data instead of claiming every task is done", () => {
+    const answer = answerFromPlan("What's next?", ctx({ tasks: [] }));
+    expect(answer).toContain("doesn't include timeline information");
+    expect(numbersIn(answer)).toEqual([]);
+  });
+
+  it("handles incomplete snapshots with empty plan collections", () => {
+    const sparse = ctx({
+      tasks: [],
+      categories: [],
+      vendors: [],
+      ideaTitles: [],
+      guestCount: 1,
+      budgetTotalCents: 0,
+      contingencyPct: 0,
+    });
+    const next = answerFromPlan("What's next?", sparse);
+    const ideas = answerFromPlan("Give me ideas", sparse);
+
+    expect(next).toContain("doesn't include timeline information");
+    expect(ideas).toContain("engine-only mode");
+    expect(numbersIn(next)).toEqual([]);
+    expect(numbersIn(ideas)).toEqual([]);
+  });
+
   it("answers progress with task and vendor counts", () => {
     const a = answerFromPlan("How many tasks are left?", ctx());
     expect(a).toBe("0 of 2 tasks done and 1 of 2 vendors booked.");
@@ -122,6 +149,16 @@ describe("answerFromPlan — guests, weather, ideas, fallback", () => {
     const a = answerFromPlan("What is the airspeed velocity of a swallow?", ctx());
     expect(a).toContain("I can answer from this plan");
     expect(a).toContain("What's next?");
+    expect(numbersIn(a)).toEqual([]);
+  });
+
+  it("uses snapshot numbers in budget and guest answers", () => {
+    const snapshot = ctx({ guestCount: 42, budgetTotalCents: 420_000 });
+    const budget = answerFromPlan("What's my budget?", snapshot);
+    const guests = answerFromPlan("How much per guest?", snapshot);
+    expect(budget).toContain("$4,200");
+    expect(guests).toContain("42 guests");
+    expect(guests).toContain("$100");
   });
 
   it("never quotes a number that is not in the snapshot", () => {
@@ -150,16 +187,27 @@ describe("answerFromPlan — guests, weather, ideas, fallback", () => {
     // Timeline answers legitimately quote due dates that ARE in the snapshot.
     const c = ctx();
     for (const t of c.tasks) {
-      for (const m of formatDate(t.dueDate).match(/\d[\d,]*/g) ?? []) snapshotNumbers.add(m);
+      for (const m of numbersIn(formatDate(t.dueDate))) snapshotNumbers.add(m);
     }
     for (const q of questions) {
       const answer = answerFromPlan(q, c);
-      // Trim trailing commas: "13 Nov 2026, T−21d" captures "2026,".
-      const numbers = (answer.match(/[\d][\d,]*/g) ?? []).map((n) => n.replace(/,+$/, ""));
-      for (const n of numbers) {
+      for (const n of numbersIn(answer)) {
         expect(snapshotNumbers.has(n), `"${n}" in answer to "${q}"`).toBe(true);
       }
     }
+  });
+
+  it("accepts a comma-terminated day number from an upcoming task date", () => {
+    const dueDate = new Date(2026, 10, 22, 12).toISOString();
+    const snapshot = ctx({
+      tasks: [{ title: "Confirm venue access", dueDate, offsetDays: 1, done: false }],
+    });
+    const answer = answerFromPlan("What's next?", snapshot);
+    const evidence = new Set([...numbersIn(formatDate(dueDate)), "1"]);
+
+    expect(answer).toContain("Confirm venue access");
+    expect(numbersIn(answer)).toContain("22");
+    for (const number of numbersIn(answer)) expect(evidence.has(number)).toBe(true);
   });
 });
 
