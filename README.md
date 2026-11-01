@@ -4,11 +4,11 @@
 
 An editorial-grade planning assistant for **celebrations and events** — budgets priced to
 the cent, reverse T−minus timelines, vendor checklists with inquiry questions, and
-personalized GenAI ideas on top. Built as premium event stationery: editorial system-serif
-type, a restrained script flourish and monospace data, a single champagne-paper theme in
-burgundy wine, antique gold and deep green, WCAG AA proven by test across every vertical.
+personalized GenAI ideas on top. Designed as premium event stationery with editorial
+serif and monospace typography over a dark aubergine palette, accented by burgundy wine,
+antique gold and deep green; WCAG AA contrast is tested across every vertical.
 
-![Landing — "Bespoke Event Planning Engine" hero](docs/screenshots/00-landing-hero.jpg)
+![Event Planner landing page with the celebration headline, planning feature chips, and sample event prompts](docs/screenshots/00-landing-submission.jpg)
 
 ---
 
