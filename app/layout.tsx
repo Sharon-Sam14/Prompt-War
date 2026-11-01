@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import type { ReactNode } from "react";
 import { ThemeProvider } from "@/components/providers/theme-provider";
 import "./globals.css";
 
@@ -8,7 +9,7 @@ export const metadata: Metadata = {
     "Plan weddings, birthdays and community events: AI-assisted ideas on top of a deterministic budget, timeline and vendor-checklist engine.",
 };
 
-export default function RootLayout({ children }: LayoutProps<"/">) {
+export default function RootLayout({ children }: { children: ReactNode }) {
   return (
     /*
       `dark` is hard-coded: the app is dark-only (owner direction 2026-10-27),
