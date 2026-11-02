@@ -19,6 +19,7 @@ import {
 } from "@/components/ui/select";
 import { Textarea } from "@/components/ui/textarea";
 import { countdown, formatMoney, parseMoneyToCents } from "@/lib/format";
+import { VERTICAL_PHOTOS } from "@/lib/config/photos";
 import { usePlannerStore } from "@/lib/store/use-planner-store";
 import { PlanInputSchema, type PlanInput } from "@/lib/genai/schemas";
 
@@ -262,17 +263,22 @@ export function EventSetupForm() {
               </li>
             ))}
           </ul>
-          {/* Hero vignette — swaps with the selected event type (Design.md §4.6). */}
-          <Image
-            key={form.vertical}
-            src={`/images/vignettes/art-${form.vertical}.svg`}
-            alt=""
-            aria-hidden="true"
-            width={320}
-            height={200}
-            unoptimized
-            className="w-full max-w-sm"
-          />
+          {/* Vertical photo plate — sanctioned slot 2 of 3 (Design.md §4.6):
+              the selected event type's own photograph, swapping live with the
+              radios. Print-mount framing, decorative, fluid at every width. */}
+          <figure className="w-full max-w-sm border border-gilt/60 bg-card p-1">
+            <Image
+              key={form.vertical}
+              src={VERTICAL_PHOTOS[form.vertical].src}
+              alt=""
+              aria-hidden="true"
+              width={VERTICAL_PHOTOS[form.vertical].width}
+              height={VERTICAL_PHOTOS[form.vertical].height}
+              sizes="(min-width: 1024px) 384px, 100vw"
+              className="aspect-[3/2] w-full object-cover"
+              style={{ objectPosition: VERTICAL_PHOTOS[form.vertical].objectPosition }}
+            />
+          </figure>
         </header>
 
         <Card>

@@ -2,6 +2,7 @@
 
 import { useState, useRef } from "react";
 import { useRouter } from "next/navigation";
+import Image from "next/image";
 import { Reveal } from "@/components/motion/reveal";
 import Link from "next/link";
 import {
@@ -22,6 +23,7 @@ import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Card, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { AuroraBackground } from "@/components/ui/aurora-background";
+import { VERTICAL_PHOTOS } from "@/lib/config/photos";
 import { motion } from "motion/react";
 import * as Accordion from "@radix-ui/react-accordion";
 
@@ -226,69 +228,16 @@ const VERTICALS = [
     value: "wedding",
     label: "Wedding",
     hint: "Ceremony + reception, 3–12 mo runway",
-    accent: "rose-wine",
-    illustration: (
-      <svg
-        className="w-12 h-12 text-accent-a"
-        viewBox="0 0 24 24"
-        fill="none"
-        stroke="currentColor"
-        strokeWidth="1.5"
-        strokeLinecap="round"
-        strokeLinejoin="round"
-        aria-hidden="true"
-      >
-        <path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z" />
-      </svg>
-    ),
   },
   {
     value: "birthday",
     label: "Birthday",
     hint: "Party + vendors, 2–8 weeks runway",
-    accent: "terracotta",
-    illustration: (
-      <svg
-        className="w-12 h-12 text-accent-a"
-        viewBox="0 0 24 24"
-        fill="none"
-        stroke="currentColor"
-        strokeWidth="1.5"
-        strokeLinecap="round"
-        strokeLinejoin="round"
-        aria-hidden="true"
-      >
-        <path d="M17 21v-6a2 2 0 0 0-2-2H9a2 2 0 0 0-2 2v6" />
-        <path d="M12 3v4" />
-        <path d="M8 21h8" />
-        <ellipse cx="12" cy="3" rx="4" ry="1" />
-        <path d="M12 7a4 4 0 0 0-4 4c0 1.5.8 2.8 2 3.5" />
-        <path d="M12 7a4 4 0 0 1 4 4c0 1.5-.8 2.8-2 3.5" />
-      </svg>
-    ),
   },
   {
     value: "community",
     label: "Community",
     hint: "Public event, permits + safety",
-    accent: "forest",
-    illustration: (
-      <svg
-        className="w-12 h-12 text-accent-a"
-        viewBox="0 0 24 24"
-        fill="none"
-        stroke="currentColor"
-        strokeWidth="1.5"
-        strokeLinecap="round"
-        strokeLinejoin="round"
-        aria-hidden="true"
-      >
-        <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2" />
-        <circle cx="9" cy="7" r="4" />
-        <path d="M23 21v-2a4 4 0 0 0-3-3.87" />
-        <path d="M16 3.13a4 4 0 0 1 0 7.75" />
-      </svg>
-    ),
   },
 ] as const;
 
@@ -433,7 +382,8 @@ export function LandingPage() {
                 ))}
               </div>
 
-              {/* Three verticals band — tall cards with accent, illustration, mini plan preview */}
+              {/* Three verticals band — tall cards with the event's own photo,
+                  mini plan preview (photo plate = Design.md §4.6 slot 3, D52) */}
               <div className="mt-10 max-w-6xl mx-auto grid gap-6 sm:grid-cols-3 pb-6">
                 {VERTICALS.map((v) => (
                   <Link
@@ -462,7 +412,21 @@ export function LandingPage() {
                         ></div>
 
                         <div className="relative flex flex-col h-full p-5">
-                          <div className="mb-4">{v.illustration}</div>
+                          {/* Per-event photo plate (Design.md §4.6 slot 4): the
+                              vertical's own photograph, print-mount framed,
+                              decorative and responsive at every width. */}
+                          <figure className="mb-4 border border-gilt/60 bg-card p-1">
+                            <Image
+                              src={VERTICAL_PHOTOS[v.value].src}
+                              alt=""
+                              aria-hidden="true"
+                              width={VERTICAL_PHOTOS[v.value].width}
+                              height={VERTICAL_PHOTOS[v.value].height}
+                              sizes="(min-width: 640px) 30vw, 100vw"
+                              className="h-32 w-full object-cover"
+                              style={{ objectPosition: VERTICAL_PHOTOS[v.value].objectPosition }}
+                            />
+                          </figure>
 
                           <h4 className="text-lg font-semibold text-foreground mb-2">{v.label}</h4>
                           <p className="text-sm text-muted-foreground mb-4">{v.hint}</p>

@@ -200,20 +200,32 @@ Owner direction, 2026-10-26 (D44): replace the flat SVG vignettes with real
 photography where atmosphere is sold, keep hand-drawn SVG only where the image is
 _functional_.
 
-- **Files:** `public/images/photos/hero-suite.jpg` (1600×1067),
-  `wedding-table.jpg` (1100×733), `birthday-cake.jpg` (900×1350),
-  `community-gathering.jpg` (1100×733) — all **Pexels License**
-  (free for commercial use; no attribution required — we credit photo IDs in the
-  README anyway), downloaded once and **bundled locally** (never hotlinked).
-  Plus `public/images/empty-ideas.svg` (empty state) and `app/icon.svg`
-  (favicon), which stay hand-drawn SVG.
-- **Sanctioned slots — exactly three, never wallpaper:**
-  1. **Landing hero plate** — `hero-suite.jpg` (invitation-suite flat lay),
-     wide framed band under the hero CTA; `priority` (it is the LCP element).
-  2. **Setup page brand column** — the vertical photo, swaps live with the
-     event-type radios (the slot the SVG vignette used to hold).
-  3. **Dashboard overview header** — the same vertical photo at small size,
-     `hidden md:block` (the second vignette slot).
+- **Files:** `public/images/photos/hero-suite.jpg` (1600×1067, **reserved —
+  not rendered**, see below), `wedding-table.jpg` (1100×733),
+  `birthday-cake.jpg` (900×1350), `community-gathering.jpg` (1100×733) — all
+  **Pexels License** (free for commercial use; no attribution required — we
+  credit photo IDs in the README anyway), downloaded once and **bundled
+  locally** (never hotlinked). Plus `public/images/empty-ideas.svg` (empty
+  state) and `app/icon.svg` (favicon), which stay hand-drawn SVG.
+- **Sanctioned slots — exactly three, never wallpaper (inventory as of D52):**
+  1. **Setup page brand column** — the vertical photo, swaps live with the
+     event-type radios. This is where the SVG vignette used to render: the
+     vignette files were deleted in D44 but the `<Image>` reference survived
+     and served a 404 on every event type until D52 replaced it with
+     `VERTICAL_PHOTOS`.
+  2. **Dashboard overview header** — the same vertical photo: a fluid banner
+     on phones, the fixed mount from `sm:` up. It was `hidden md:block`, so
+     phones never saw their own event photograph (fixed in D52).
+  3. **Landing vertical cards (D52, new)** — each of the three event-type
+     cards carries its own `VERTICAL_PHOTOS` photograph above the mini
+     "Sample plan" block, print-mount framed, fluid at every width
+     (`sizes="(min-width: 640px) 30vw, 100vw"`).
+- **Reserved, not shipped:** the D44 "landing hero plate" band
+  (`hero-suite.jpg` under the hero CTA, with `HERO_PHOTO` in
+  `lib/config/photos.ts`) was specified but never built — the hero stays
+  text-only so the landing keeps its existing visual identity. The file and
+  export remain bundled and reserved; do not place them without owner
+  sign-off.
 - **Framing = print mount:** card-paper background, 1 px gilt hairline border,
   `object-cover` crop to the slot's aspect box. **No** shadow, gradient, overlay,
   caption bar or filter on the photo itself.
@@ -221,7 +233,7 @@ _functional_.
   wine dahlias + blush roses; birthday = blush frosting + gold script topper;
   community = amber bulb light over a shared table; hero = cream/bronze suite.
 - **Rules:** ≤ 250 KB per file; intrinsic `width`/`height` declared (CLS must
-  stay 0); one photo per slot; aspect-cropped, never letterboxed; portrait
+  stay 0); one photo per slot instance; aspect-cropped, never letterboxed; portrait
   sources inside landscape mounts carry a per-photo `object-position` (birthday
   plate `50% 75%`) so the subject stays fully framed — verified against the
   rendered plates; still no gradients/filters/overlays anywhere in the chrome
@@ -299,7 +311,8 @@ _functional_.
   `font-mono` preview line (data-sheet motif).
 - **How it works** — 3 numbered steps, each with a mono **input preview box**.
 - **Vertical cards** — 3 `data-vertical` cards (wedding / birthday / community)
-  linking to `/onboarding?vertical=…`, each with a mini "Sample plan" block.
+  linking to `/onboarding?vertical=…`, each with its own event-type photograph
+  (§4.6 slot 3, D52) above a mini "Sample plan" block.
 - **#trust / #preview / #faq** — honest-numbers cards, dashboard preview figure,
   and a 6-item accordion.
 - **`/create`** — the split-stationery form (h2 "New event plan",

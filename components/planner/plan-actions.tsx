@@ -3,7 +3,7 @@
 import { AlertDialog } from "radix-ui";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
-import { BookmarkPlus, Moon, RotateCcw, Sparkles, Trash2 } from "lucide-react";
+import { BookmarkPlus, RotateCcw, Sparkles, Trash2 } from "lucide-react";
 import Link from "next/link";
 import { ImportPlanControl } from "@/components/planner/import-plan-control";
 import { Button } from "@/components/ui/button";
@@ -11,8 +11,8 @@ import type { PlanInput, Vertical } from "@/lib/genai/schemas";
 import { usePlannerStore } from "@/lib/store/use-planner-store";
 
 /**
- * Command-center utility bar (Prompt 6 §2): theme-lock indicator, sample plan,
- * import and reset. Both destructive actions ask first through a Radix
+ * Command-center utility bar (Prompt 6 §2): sample plan, import, event library
+ * and reset. Both destructive actions ask first through a Radix
  * AlertDialog (focus-trapped, labelled) and announce the outcome politely.
  *
  * The sample is a normal engine-generated plan — same POST /api/plan path as the
@@ -103,14 +103,6 @@ export function PlanActions({ vertical }: { vertical: Vertical }) {
 
   return (
     <div className="flex flex-wrap items-center gap-1.5 print:hidden">
-      <span
-        title="Dark theme is locked in this build"
-        className="inline-flex h-7 items-center gap-1.5 rounded-full border border-rose/25 bg-wine-deep/30 px-2.5 text-[11px] text-accent-a-text"
-      >
-        <Moon aria-hidden="true" className="size-3" />
-        Dark · locked
-      </span>
-
       <ImportPlanControl compact />
 
       <label className="sr-only" htmlFor="saved-event-select">

@@ -159,7 +159,11 @@ export function PlanDashboard({ planId }: { planId: string }) {
             </span>
             <span className="eyebrow text-[10px] text-muted-foreground">Sections</span>
           </div>
-          <TabsList className="h-auto w-full justify-start gap-1 overflow-x-auto rounded-none bg-transparent p-2 lg:flex-col lg:items-stretch">
+          {/* Mobile: the six section tabs wrap onto a second row instead of
+              scrolling sideways (D52) — at 390 px a clipped strip hid
+              Timeline/Checklist/Ideas/Exports behind an invisible scroll.
+              lg restores the single-column rail. */}
+          <TabsList className="h-auto w-full flex-wrap justify-start gap-1 rounded-none bg-transparent p-2 lg:flex-col lg:items-stretch lg:flex-nowrap">
             {PLANNER_TABS.map((tab) => {
               const Icon = TAB_META[tab].icon;
               return (

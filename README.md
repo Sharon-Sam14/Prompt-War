@@ -324,8 +324,9 @@ performance ≥ 0.90 a warning):
 | Best practices | **96**  |
 | SEO            | **100** |
 
-Metrics: FCP 0.3 s · LCP 0.7 s (the hero photo plate — image LCP, well inside the
-2.5 s "good" budget) · **CLS 0** · TBT 0 ms · Speed Index 0.6 s · TTI 0.7 s.
+Metrics: FCP 0.3 s · LCP 0.7 s (the hero is text-only — the LCP is the script
+headline, well inside the 2.5 s "good" budget) · **CLS 0** · TBT 0 ms · Speed Index
+0.6 s · TTI 0.7 s.
 
 ## 10. Manual QA matrix
 
@@ -385,15 +386,27 @@ No step required a pointer, and the run finishes with `pageErrors === []`.
 
 ## 12. Screenshots
 
-|                                                            |                                                           |
-| ---------------------------------------------------------- | --------------------------------------------------------- |
-| ![Landing full page](docs/screenshots/01-landing-full.jpg) | ![Setup form](docs/screenshots/02-setup.jpg)              |
-| ![Overview](docs/screenshots/03-overview.jpg)              | ![Assistant answering](docs/screenshots/04-assistant.jpg) |
-| ![Exports tab](docs/screenshots/05-exports.jpg)            |                                                           |
+Captured headlessly with `node scripts/screenshots.mjs` against a production build on
+localhost:3000 (dark-only, since D46). Single-column so every image scales on a phone
+as well as a laptop — the 2-column table this replaced was cramped at 390 px.
+
+| Image                                                                                                                                                           | What it shows                |
+| --------------------------------------------------------------------------------------------------------------------------------------------------------------- | ---------------------------- |
+| ![Landing page hero: headline "Your celebration, handled", planning feature chips, and sample event prompts](docs/screenshots/00-landing-submission.jpg)        | Landing shell — desktop hero |
+| ![Full landing page: hero, three event-type cards, features, how it works, trust, preview and FAQ](docs/screenshots/01-landing-full.jpg)                        | Full landing page            |
+| ![Setup form "New event plan" with the wedding photograph in the brand column and the event-type radio cards](docs/screenshots/02-setup.jpg)                    | Setup form — wedding         |
+| ![Wedding dashboard: overview KPIs, upcoming deadlines, planning snapshot, assistant and budget](docs/screenshots/03-overview.jpg)                              | Wedding dashboard            |
+| ![Birthday dashboard with the birthday-cake photograph in the overview header](docs/screenshots/06-birthday-overview.jpg)                                       | Birthday dashboard           |
+| ![Community dashboard with the community-gathering photograph in the overview header](docs/screenshots/07-community-overview.jpg)                               | Community dashboard          |
+| ![Assistant answering "How many tasks are left?" from the deterministic engine](docs/screenshots/04-assistant.jpg)                                              | Assistant                    |
+| ![Exports tab: PDF, CSV, Markdown and JSON downloads plus print](docs/screenshots/05-exports.jpg)                                                               | Exports tab                  |
+| ![Landing page at phone width: the three event-type cards stack with their photographs full-width](docs/screenshots/08-mobile-landing.jpg)                      | Mobile — landing             |
+| ![Community dashboard at phone width: the event photo banner sits above the KPIs and all six section tabs are visible](docs/screenshots/09-mobile-overview.jpg) | Mobile — dashboard           |
 
 Refresh them with `node scripts/screenshots.mjs` (server running, production build).
 
 Photography (Pexels License — free for commercial use, no attribution required; credited
-here anyway), bundled locally in `public/images/photos/` and used only in the three
-sanctioned slots (Design.md §4.6): hero invitation suite `#15313106` · wedding table
-`#9122822` · birthday cake `#5713240` · community gathering `#5638815`.
+here anyway), bundled locally in `public/images/photos/` and used only in the sanctioned
+slots (Design.md §4.6): wedding table `#9122822` · birthday cake `#5713240` · community
+gathering `#5638815`. The hero invitation suite `#15313106` is bundled and reserved
+(the landing hero plate was specified but never shipped — see Design.md §4.6).

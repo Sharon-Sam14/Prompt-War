@@ -1,10 +1,14 @@
 import type { Vertical } from "@/lib/genai/schemas";
 
 /**
- * Bundled photography for the three sanctioned slots (Design.md §4.6, D44):
- *   1. landing hero band — HERO_PHOTO (priority: it is the LCP element)
- *   2. setup masthead     — VERTICAL_PHOTOS[vertical] (swaps with the radios)
- *   3. overview header    — VERTICAL_PHOTOS[vertical] (md+ only)
+ * Bundled photography for the sanctioned slots (Design.md §4.6, D44/D52):
+ *   1. setup masthead    — VERTICAL_PHOTOS[vertical] (swaps with the radios)
+ *   2. overview header   — VERTICAL_PHOTOS[vertical] (fluid banner on phones)
+ *   3. landing cards     — VERTICAL_PHOTOS[vertical] (one photo per event type)
+ *
+ * HERO_PHOTO is reserved for the D44 "landing hero plate" band, which was
+ * specified but never shipped — the hero stays text-only. Do not render it
+ * without owner sign-off (see Design.md §4.6).
  *
  * All four files are Pexels License (commercial use OK, no attribution
  * required — README credits the photo IDs anyway), downloaded once into

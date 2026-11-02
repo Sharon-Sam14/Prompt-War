@@ -58,7 +58,7 @@ Single test file: `npx vitest run tests/unit/rules-engine.test.ts` · single e2e
 - APIs: `app/api/plan` (generation), `app/api/ask` (assistant); mutations in `app/actions.ts`. Server Actions are **public endpoints** — each one Zod-validates and rate-limits itself.
 - `lib/rules-engine/*` is pure TS (no I/O/React/LLM); templates/weights live in `lib/config/*.ts`; `hydrate.ts` merges optional LLM enrichment and must keep `meta.source: "llm" | "fallback"` honest in UI and exports.
 - All three verticals (wedding, birthday, community) are first-class — never wedding-centric copy.
-- Photography: bundled Pexels-license JPEGs in `public/images/photos/`, used only in the three sanctioned slots (Design.md §4.6, print-mount framing); hand-drawn SVG only for `empty-ideas.svg` and `app/icon.svg`. No hotlinked stock.
+- Photography: bundled Pexels-license JPEGs in `public/images/photos/`, used only in the sanctioned slots (Design.md §4.6, print-mount framing): the setup masthead, the dashboard overview header, and the three landing vertical cards — one photo per event type, fluid on mobile. `hero-suite.jpg` is bundled and reserved (the landing hero plate was specified but never shipped). Hand-drawn SVG only for `empty-ideas.svg` and `app/icon.svg`. No hotlinked stock.
 - Navigation is settled: landing anchor-nav (**no "Create event" entry** — owner removed it, D47) + `/create` route (URL-only) + dashboard sidebar tablist (Memory D38/D46/D47; the `#create` anchor is retired). The earlier "persistent app-shell" alternative stays cancelled — don't revive it without an explicit owner request.
 
 ## Session rules (owner)

@@ -127,17 +127,19 @@ export function OverviewPanel({ plan }: { plan: Plan }) {
           </p>
         </div>
         {/* Vertical photo plate — sanctioned slot 3 of 3 (Design.md §4.6, D44):
-            same photo as the setup masthead, fixed 3:2 mount, md+ only.
+            same photo as the setup masthead: a fluid banner on phones, the
+            fixed 3:2 mount from sm up (it used to be desktop-only, so phones
+            never saw their own event photograph).
             Atmosphere only → alt="" + aria-hidden. */}
-        <figure className="hidden shrink-0 border border-gilt/60 bg-card p-1 md:block">
+        <figure className="w-full max-w-sm shrink-0 border border-gilt/60 bg-card p-1 sm:w-48">
           <Image
             src={VERTICAL_PHOTOS[plan.input.vertical].src}
             alt=""
             aria-hidden="true"
             width={VERTICAL_PHOTOS[plan.input.vertical].width}
             height={VERTICAL_PHOTOS[plan.input.vertical].height}
-            sizes="192px"
-            className="h-32 w-48 object-cover"
+            sizes="(min-width: 640px) 192px, 100vw"
+            className="h-32 w-full object-cover"
             style={{ objectPosition: VERTICAL_PHOTOS[plan.input.vertical].objectPosition }}
           />
         </figure>
